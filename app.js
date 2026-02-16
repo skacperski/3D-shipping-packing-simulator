@@ -45,9 +45,7 @@ let scene, camera, renderer, orbitControls, transformControls;
 let containerMesh, containerBox;
 let packedItems = [];
 let selectedItem = null;
-let controlMode = 'translate';
 let snapEnabled = true;
-let rotSnapEnabled = true;
 let collisionEnabled = true;
 let containerDims = { w: 60, h: 40, d: 40 };
 
@@ -124,9 +122,9 @@ function init() {
     orbitControls.maxDistance = 5;
     orbitControls.update();
 
-    // Transform Controls
+    // Transform Controls (translate only - rotation via 90° buttons)
     transformControls = new TransformControls(camera, renderer.domElement);
-    transformControls.setSpace('local');
+    transformControls.setMode('translate');
     transformControls.addEventListener('dragging-changed', (event) => {
         orbitControls.enabled = !event.value;
     });
@@ -414,7 +412,7 @@ function selectItem(mesh) {
     mesh.material.emissive.setHex(SELECTED_EMISSIVE);
 
     transformControls.attach(mesh);
-    transformControls.setMode(controlMode);
+    transformControls.setMode('translate');
     applySnap();
 
     document.getElementById('deleteSelected').disabled = false;
@@ -859,12 +857,68 @@ function applySnap() {
     } else {
         transformControls.setTranslationSnap(null);
     }
+}
 
-    if (rotSnapEnabled) {
-        transformControls.setRotationSnap(THREE.MathUtils.degToRad(90));
-    } else {
-        transformControls.setRotationSnap(null);
-    }
+// ============================================
+// Rotate 90° (discrete rotation)
+// ============================================
+
+function rotateItem90(axis, direction) {
+    if (!selectedItem) return;
+
+    const item = selectedItem;
+
+    const angle = (Math.PI / 2) * direction;
+    const axisVec = new THREE.Vector3(
+        axis === 'x' ? 1 : 0,
+        axis === 'y' ? 1 : 0,
+        axis === 'z' ? 1 : 0
+    );
+
+    const rotQ = new THREE.Quaternion().setFromAxisAngle(axisVec, angle);
+    item.quaternion.premultiply(rotQ);
+
+    // Normalize quaternion to avoid drift
+    item.quaternion.normalize();
+
+    // Snap quaternion to nearest 90° aligned orientation
+    snapQuaternionTo90(item.quaternion);
+
+    // Update world matrix before constraining
+    item.updateMatrixWorld(true);
+
+    // Re-constrain to container after rotation
+    constrainToContainer(item);
+
+    updateCollisions();
+    updateStats();
+
+    // Re-assert selection (rotation may disrupt TransformControls state)
+    selectItem(item);
+}
+
+function snapQuaternionTo90(q) {
+    // Round each component to nearest value that represents a 90° rotation
+    // Valid quaternion components for 90° multiples: 0, ±0.5, ±(√2/2), ±1
+    const snap = (v) => {
+        const vals = [0, 0.5, -0.5, Math.SQRT1_2, -Math.SQRT1_2, 1, -1];
+        let closest = vals[0];
+        let minDist = Math.abs(v - closest);
+        for (const val of vals) {
+            const dist = Math.abs(v - val);
+            if (dist < minDist) {
+                minDist = dist;
+                closest = val;
+            }
+        }
+        return closest;
+    };
+
+    q.x = snap(q.x);
+    q.y = snap(q.y);
+    q.z = snap(q.z);
+    q.w = snap(q.w);
+    q.normalize();
 }
 
 // ============================================
@@ -879,22 +933,18 @@ function setupUI() {
         });
     });
 
-    // Control mode buttons
-    document.getElementById('modeTranslate').addEventListener('click', () => {
-        setControlMode('translate');
-    });
-    document.getElementById('modeRotate').addEventListener('click', () => {
-        setControlMode('rotate');
+    // Rotate 90° buttons
+    document.querySelectorAll('.btn-rotate').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const axis = btn.dataset.axis;
+            const dir = parseInt(btn.dataset.dir);
+            rotateItem90(axis, dir);
+        });
     });
 
-    // Snap toggles
+    // Snap toggle
     document.getElementById('snapToggle').addEventListener('change', (e) => {
         snapEnabled = e.target.checked;
-        applySnap();
-    });
-
-    document.getElementById('rotSnapToggle').addEventListener('change', (e) => {
-        rotSnapEnabled = e.target.checked;
         applySnap();
     });
 
@@ -918,14 +968,6 @@ function setupUI() {
         updateCollisions();
         render();
     });
-}
-
-function setControlMode(mode) {
-    controlMode = mode;
-    transformControls.setMode(mode);
-
-    document.getElementById('modeTranslate').classList.toggle('active', mode === 'translate');
-    document.getElementById('modeRotate').classList.toggle('active', mode === 'rotate');
 }
 
 function updateItemsList() {
@@ -1015,12 +1057,20 @@ function setupKeyboard() {
         // Don't capture while typing in inputs
         if (e.target.tagName === 'INPUT') return;
 
+        const dir = e.shiftKey ? -1 : 1;
+
         switch (e.key.toLowerCase()) {
-            case 'w':
-                setControlMode('translate');
+            case 'x':
+                e.preventDefault();
+                rotateItem90('x', dir);
                 break;
-            case 'e':
-                setControlMode('rotate');
+            case 'y':
+                e.preventDefault();
+                rotateItem90('y', dir);
+                break;
+            case 'z':
+                e.preventDefault();
+                rotateItem90('z', dir);
                 break;
             case 'delete':
             case 'backspace':

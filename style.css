@@ -268,32 +268,74 @@ body {
 }
 
 /* ============================================
-   Control Buttons
+   Rotate Grid
    ============================================ */
 
-.control-buttons {
+.rotate-grid {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.btn-control {
+.rotate-axis {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.axis-label {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.axis-label.axis-x {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.axis-label.axis-y {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.axis-label.axis-z {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.btn-rotate {
     flex: 1;
-    padding: 8px 12px;
+    padding: 6px 10px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     font-size: 0.78rem;
+    font-weight: 500;
 }
 
-.btn-control:hover {
+.btn-rotate:hover {
     background: var(--bg-hover);
+    border-color: var(--accent);
 }
 
-.btn-control.active {
+.btn-rotate:active {
     background: var(--accent);
-    border-color: var(--accent);
     color: white;
+    transform: scale(0.97);
 }
+
+/* ============================================
+   Control Options
+   ============================================ */
 
 .control-options {
     display: flex;
