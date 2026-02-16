@@ -43,12 +43,10 @@ const MAX_HISTORY = 50;
 // ============================================
 
 let scene, camera, renderer, orbitControls, transformControls;
-let containerMesh, containerBox;
 let packedItems = [];
 let selectedItem = null;
 let snapEnabled = true;
 let collisionEnabled = true;
-let containerDims = { w: 60, h: 40, d: 40 };
 
 // Undo/Redo history
 let undoStack = [];
@@ -139,7 +137,6 @@ function init() {
     });
     transformControls.addEventListener('change', () => {
         if (selectedItem) {
-            constrainToContainer(selectedItem);
             updateCollisions();
             updateStats();
         }
@@ -148,7 +145,6 @@ function init() {
     scene.add(transformControls.getHelper());
 
     applySnap();
-    createContainer();
     setupSelection();
     setupUI();
     setupKeyboard();
@@ -278,76 +274,6 @@ function createItemMesh(type, id) {
 }
 
 // ============================================
-// Container
-// ============================================
-
-function createContainer() {
-    if (containerMesh) scene.remove(containerMesh);
-
-    const w = containerDims.w * SCALE;
-    const h = containerDims.h * SCALE;
-    const d = containerDims.d * SCALE;
-
-    const group = new THREE.Group();
-
-    const bottomGeo = new THREE.PlaneGeometry(w, d);
-    const bottomMat = new THREE.MeshStandardMaterial({
-        color: 0x3a3a4a, roughness: 0.8, transparent: true,
-        opacity: 0.3, side: THREE.DoubleSide
-    });
-    const bottom = new THREE.Mesh(bottomGeo, bottomMat);
-    bottom.rotation.x = -Math.PI / 2;
-    bottom.receiveShadow = true;
-    group.add(bottom);
-
-    const edgesGeo = new THREE.BoxGeometry(w, h, d);
-    const edgesMat = new THREE.LineBasicMaterial({
-        color: 0x6366f1, linewidth: 1, transparent: true, opacity: 0.7
-    });
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(edgesGeo), edgesMat);
-    edges.position.y = h / 2;
-    group.add(edges);
-
-    const wallMat = new THREE.MeshStandardMaterial({
-        color: 0x4444aa, transparent: true, opacity: 0.06,
-        side: THREE.DoubleSide, depthWrite: false
-    });
-
-    const backWall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wallMat);
-    backWall.position.set(0, h / 2, -d / 2);
-    group.add(backWall);
-
-    const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(d, h), wallMat);
-    leftWall.rotation.y = Math.PI / 2;
-    leftWall.position.set(-w / 2, h / 2, 0);
-    group.add(leftWall);
-
-    const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(d, h), wallMat);
-    rightWall.rotation.y = -Math.PI / 2;
-    rightWall.position.set(w / 2, h / 2, 0);
-    group.add(rightWall);
-
-    const frontWallMat = new THREE.MeshStandardMaterial({
-        color: 0x4444aa, transparent: true, opacity: 0.03,
-        side: THREE.DoubleSide, depthWrite: false
-    });
-    const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), frontWallMat);
-    frontWall.position.set(0, h / 2, d / 2);
-    group.add(frontWall);
-
-    containerMesh = group;
-    containerMesh.userData.isContainer = true;
-    scene.add(containerMesh);
-
-    containerBox = new THREE.Box3(
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(w, h, d)
-    );
-    containerMesh.position.set(0, 0, 0);
-    updateStats();
-}
-
-// ============================================
 // Item Creation
 // ============================================
 
@@ -358,13 +284,11 @@ function addItem(type) {
 
     const mesh = createItemMesh(type);
 
-    const cwCm = containerDims.w;
-    const chCm = containerDims.h;
-    const cdCm = containerDims.d;
     const itemW = config.dims[0];
     const itemH = config.dims[1];
     const itemD = config.dims[2];
 
+    // Place next to existing items using candidate positions
     const existingBoxes = packedItems.map(existing => {
         const bb = new THREE.Box3().setFromObject(existing);
         return {
@@ -384,7 +308,6 @@ function addItem(type) {
     candidates.sort((a, b) => (a.y * 10000 + a.z * 100 + a.x) - (b.y * 10000 + b.z * 100 + b.x));
 
     for (const pos of candidates) {
-        if (pos.x + itemW > cwCm + 0.01 || pos.y + itemH > chCm + 0.01 || pos.z + itemD > cdCm + 0.01) continue;
         if (pos.x < -0.01 || pos.y < -0.01 || pos.z < -0.01) continue;
 
         let collision = false;
@@ -409,10 +332,11 @@ function addItem(type) {
     }
 
     if (!placed) {
-        const w = config.dims[0] * SCALE;
-        const h = config.dims[1] * SCALE;
-        const d = config.dims[2] * SCALE;
-        mesh.position.set(w / 2, h / 2, d / 2);
+        mesh.position.set(
+            (itemW / 2) * SCALE,
+            (itemH / 2) * SCALE,
+            (itemD / 2) * SCALE
+        );
     }
 
     scene.add(mesh);
@@ -525,25 +449,6 @@ function clearAll() {
 }
 
 // ============================================
-// Constraints
-// ============================================
-
-function constrainToContainer(mesh) {
-    if (!containerBox) return;
-    const bbox = new THREE.Box3().setFromObject(mesh);
-    const size = new THREE.Vector3();
-    bbox.getSize(size);
-
-    const cw = containerDims.w * SCALE;
-    const ch = containerDims.h * SCALE;
-    const cd = containerDims.d * SCALE;
-
-    mesh.position.x = Math.max(size.x / 2, Math.min(cw - size.x / 2, mesh.position.x));
-    mesh.position.y = Math.max(size.y / 2, Math.min(ch - size.y / 2, mesh.position.y));
-    mesh.position.z = Math.max(size.z / 2, Math.min(cd - size.z / 2, mesh.position.z));
-}
-
-// ============================================
 // Collision Detection (OBB-based)
 // ============================================
 
@@ -608,16 +513,6 @@ function obbIntersects(a, b) {
     return true;
 }
 
-function isOutsideContainer(mesh) {
-    const bbox = new THREE.Box3().setFromObject(mesh);
-    const cw = containerDims.w * SCALE;
-    const ch = containerDims.h * SCALE;
-    const cd = containerDims.d * SCALE;
-    const EPS = 0.005;
-    return (bbox.min.x < -EPS || bbox.min.y < -EPS || bbox.min.z < -EPS ||
-        bbox.max.x > cw + EPS || bbox.max.y > ch + EPS || bbox.max.z > cd + EPS);
-}
-
 function updateCollisions() {
     let collisionCount = 0;
     packedItems.forEach(item => {
@@ -640,9 +535,6 @@ function updateCollisions() {
             }
         }
     }
-    packedItems.forEach(item => {
-        if (isOutsideContainer(item)) collisionSet.add(item);
-    });
     collisionSet.forEach(item => {
         item.material.color.setHex(COLLISION_COLOR);
         if (item !== selectedItem) item.material.emissive.setHex(0x330000);
@@ -659,7 +551,7 @@ function aabbOverlaps(ax, ay, az, aw, ah, ad, bx, by, bz, bw, bh, bd) {
     return (ax < bx+bw-EPS && ax+aw > bx+EPS && ay < by+bh-EPS && ay+ah > by+EPS && az < bz+bd-EPS && az+ad > bz+EPS);
 }
 
-function generateCandidatePositions(ow, oh, od, cw, ch, cd, placedBoxes) {
+function generateCandidatePositions(ow, oh, od, placedBoxes) {
     const positions = [{ x: 0, y: 0, z: 0 }];
     for (const box of placedBoxes) {
         positions.push({ x: box.x, y: box.y + box.h, z: box.z });
@@ -669,10 +561,7 @@ function generateCandidatePositions(ow, oh, od, cw, ch, cd, placedBoxes) {
         positions.push({ x: box.x + box.w, y: box.y + box.h, z: box.z });
         positions.push({ x: box.x, y: box.y + box.h, z: box.z + box.d });
     }
-    return positions.filter(p =>
-        p.x >= -0.01 && p.y >= -0.01 && p.z >= -0.01 &&
-        p.x + ow <= cw + 0.01 && p.y + oh <= ch + 0.01 && p.z + od <= cd + 0.01
-    );
+    return positions.filter(p => p.x >= -0.01 && p.y >= -0.01 && p.z >= -0.01);
 }
 
 function getUniqueOrientations(dims) {
@@ -697,7 +586,7 @@ function getUniqueOrientations(dims) {
 }
 
 // Run a single packing attempt with a given item order and scoring function
-function runPackingAttempt(itemsList, cw, ch, cd, scoreFn) {
+function runPackingAttempt(itemsList, scoreFn) {
     const placedBoxes = [];
     const results = [];
 
@@ -709,12 +598,9 @@ function runPackingAttempt(itemsList, cw, ch, cd, scoreFn) {
 
         for (const orient of orientations) {
             const [ow, oh, od] = orient.dims;
-            if (ow > cw || oh > ch || od > cd) continue;
 
-            const candidates = generateCandidatePositions(ow, oh, od, cw, ch, cd, placedBoxes);
+            const candidates = generateCandidatePositions(ow, oh, od, placedBoxes);
             for (const pos of candidates) {
-                if (pos.x + ow > cw + 0.01 || pos.y + oh > ch + 0.01 || pos.z + od > cd + 0.01) continue;
-
                 let hasCollision = false;
                 for (const box of placedBoxes) {
                     if (aabbOverlaps(pos.x, pos.y, pos.z, ow, oh, od, box.x, box.y, box.z, box.w, box.h, box.d)) {
@@ -722,7 +608,7 @@ function runPackingAttempt(itemsList, cw, ch, cd, scoreFn) {
                     }
                 }
                 if (!hasCollision) {
-                    const score = scoreFn(pos, ow, oh, od);
+                    const score = scoreFn(pos, ow, oh, od, placedBoxes);
                     if (score < bestScore) { bestScore = score; bestPos = pos; bestOrient = orient; }
                 }
             }
@@ -778,7 +664,6 @@ function autoPack() {
     if (packedItems.length === 0) return;
     const before = captureState();
 
-    const cw = containerDims.w, ch = containerDims.h, cd = containerDims.d;
     const sorted = [...packedItems].sort((a, b) => {
         const volA = a.userData.originalDims.reduce((p, c) => p * c, 1);
         const volB = b.userData.originalDims.reduce((p, c) => p * c, 1);
@@ -787,9 +672,8 @@ function autoPack() {
     sorted.forEach(item => item.quaternion.set(0, 0, 0, 1));
 
     const scoreFn = (pos, ow, oh, od) => pos.y * 10000 + pos.z * 100 + pos.x;
-    const result = runPackingAttempt(sorted, cw, ch, cd, scoreFn);
+    const result = runPackingAttempt(sorted, scoreFn);
     applyPackingResult(result.results);
-    sorted.forEach(item => constrainToContainer(item));
 
     pushUndo(before);
     updateCollisions();
@@ -806,9 +690,14 @@ function randomPlace() {
     if (packedItems.length === 0) return;
     const before = captureState();
 
-    const cw = containerDims.w, ch = containerDims.h, cd = containerDims.d;
+    // Compute a reasonable random area based on total item volume
+    let totalVol = 0;
+    packedItems.forEach(item => {
+        const d = item.userData.originalDims;
+        totalVol += d[0] * d[1] * d[2];
+    });
+    const spread = Math.cbrt(totalVol) * 2.5;
 
-    // Shuffle items
     const shuffled = [...packedItems].sort(() => Math.random() - 0.5);
     shuffled.forEach(item => item.quaternion.set(0, 0, 0, 1));
 
@@ -817,18 +706,14 @@ function randomPlace() {
     shuffled.forEach(item => {
         const dims = item.userData.originalDims;
         const orientations = getUniqueOrientations(dims);
-        // Pick random orientation
         const orient = orientations[Math.floor(Math.random() * orientations.length)];
         const [ow, oh, od] = orient.dims;
 
-        if (ow > cw || oh > ch || od > cd) return;
-
         let placed = false;
-        // Try random positions up to 200 times
         for (let attempt = 0; attempt < 200; attempt++) {
-            const px = Math.random() * (cw - ow);
-            const py = Math.random() * (ch - oh);
-            const pz = Math.random() * (cd - od);
+            const px = Math.random() * spread;
+            const py = Math.random() * spread;
+            const pz = Math.random() * spread;
 
             let collision = false;
             for (const box of placedBoxes) {
@@ -846,10 +731,8 @@ function randomPlace() {
         }
 
         if (!placed) {
-            // Fallback: use candidate-based placement
-            const candidates = generateCandidatePositions(ow, oh, od, cw, ch, cd, placedBoxes);
+            const candidates = generateCandidatePositions(ow, oh, od, placedBoxes);
             for (const pos of candidates) {
-                if (pos.x + ow > cw + 0.01 || pos.y + oh > ch + 0.01 || pos.z + od > cd + 0.01) continue;
                 let collision = false;
                 for (const box of placedBoxes) {
                     if (aabbOverlaps(pos.x, pos.y, pos.z, ow, oh, od, box.x, box.y, box.z, box.w, box.h, box.d)) {
@@ -866,8 +749,6 @@ function randomPlace() {
         }
     });
 
-    shuffled.forEach(item => constrainToContainer(item));
-
     pushUndo(before);
     updateCollisions();
     updateStats();
@@ -883,50 +764,36 @@ function optimalPack() {
     if (packedItems.length === 0) return;
     const before = captureState();
 
-    const cw = containerDims.w, ch = containerDims.h, cd = containerDims.d;
-
-    // Different scoring functions to try
     const scoreFunctions = [
-        // Bottom-left-back (default)
         (pos, ow, oh, od) => pos.y * 10000 + pos.z * 100 + pos.x,
-        // Bottom-left-front
         (pos, ow, oh, od) => pos.y * 10000 + pos.x * 100 + pos.z,
-        // Bottom-back-left
         (pos, ow, oh, od) => pos.y * 10000 + (pos.x + pos.z) * 50,
-        // Minimize height first, then compactness
         (pos, ow, oh, od) => (pos.y + oh) * 10000 + pos.x * 100 + pos.z,
-        // Maximize contact area (prefer positions touching more walls/boxes)
-        (pos, ow, oh, od) => {
-            let wallContact = 0;
-            if (pos.x < 0.1) wallContact++;
-            if (pos.y < 0.1) wallContact++;
-            if (pos.z < 0.1) wallContact++;
-            if (pos.x + ow > cw - 0.1) wallContact++;
-            if (pos.z + od > cd - 0.1) wallContact++;
-            return -wallContact * 10000 + pos.y * 1000 + pos.x + pos.z;
+        // Prefer touching origin walls
+        (pos, ow, oh, od, placed) => {
+            let contact = 0;
+            if (pos.x < 0.1) contact++;
+            if (pos.y < 0.1) contact++;
+            if (pos.z < 0.1) contact++;
+            for (const b of placed) {
+                if (Math.abs(pos.x - (b.x + b.w)) < 0.1 || Math.abs(pos.x + ow - b.x) < 0.1) contact++;
+                if (Math.abs(pos.y - (b.y + b.h)) < 0.1) contact++;
+                if (Math.abs(pos.z - (b.z + b.d)) < 0.1 || Math.abs(pos.z + od - b.z) < 0.1) contact++;
+            }
+            return -contact * 10000 + pos.y * 1000 + pos.x + pos.z;
         },
-        // Corner preference
-        (pos, ow, oh, od) => pos.y * 5000 + Math.min(pos.x, cw - pos.x - ow) * 100 + Math.min(pos.z, cd - pos.z - od),
+        (pos, ow, oh, od) => pos.y * 5000 + pos.x * 50 + pos.z,
     ];
 
-    // Different sorting strategies
     const sortingStrategies = [
-        // By volume descending
         (a, b) => b.userData.originalDims.reduce((p, c) => p * c, 1) - a.userData.originalDims.reduce((p, c) => p * c, 1),
-        // By longest dimension descending
         (a, b) => Math.max(...b.userData.originalDims) - Math.max(...a.userData.originalDims),
-        // By base area descending (ignore smallest dim)
         (a, b) => {
             const aD = [...a.userData.originalDims].sort((x, y) => y - x);
             const bD = [...b.userData.originalDims].sort((x, y) => y - x);
             return (bD[0] * bD[1]) - (aD[0] * aD[1]);
         },
-        // By height descending (tallest dimension)
-        (a, b) => {
-            const aMin = Math.min(...a.userData.originalDims);
-            const bMin = Math.min(...b.userData.originalDims);
-            return aMin - bMin;
-        },
+        (a, b) => Math.min(...a.userData.originalDims) - Math.min(...b.userData.originalDims),
     ];
 
     let bestResult = null;
@@ -937,38 +804,30 @@ function optimalPack() {
             const sorted = [...packedItems].sort(sortFn);
             sorted.forEach(item => item.quaternion.set(0, 0, 0, 1));
 
-            const result = runPackingAttempt(sorted, cw, ch, cd, scoreFn);
+            const result = runPackingAttempt(sorted, scoreFn);
             const allPlaced = result.results.every(r => r.pos !== null);
             if (!allPlaced) continue;
 
             const vol = getPackedBoundingVolume(result.placedBoxes);
-            if (vol < bestBoundingVol) {
-                bestBoundingVol = vol;
-                bestResult = result;
-            }
+            if (vol < bestBoundingVol) { bestBoundingVol = vol; bestResult = result; }
         }
     }
 
-    // Also try several random permutations
     for (let attempt = 0; attempt < 30; attempt++) {
         const shuffled = [...packedItems].sort(() => Math.random() - 0.5);
         shuffled.forEach(item => item.quaternion.set(0, 0, 0, 1));
 
         const scoreFn = scoreFunctions[attempt % scoreFunctions.length];
-        const result = runPackingAttempt(shuffled, cw, ch, cd, scoreFn);
+        const result = runPackingAttempt(shuffled, scoreFn);
         const allPlaced = result.results.every(r => r.pos !== null);
         if (!allPlaced) continue;
 
         const vol = getPackedBoundingVolume(result.placedBoxes);
-        if (vol < bestBoundingVol) {
-            bestBoundingVol = vol;
-            bestResult = result;
-        }
+        if (vol < bestBoundingVol) { bestBoundingVol = vol; bestResult = result; }
     }
 
     if (bestResult) {
         applyPackingResult(bestResult.results);
-        packedItems.forEach(item => constrainToContainer(item));
     }
 
     pushUndo(before);
@@ -977,11 +836,10 @@ function optimalPack() {
     updateItemsList();
     render();
 
-    // Show the bounding volume in the overlay
     if (bestResult) {
         const h = getPackedHeight(bestResult.placedBoxes);
         document.getElementById('selectedInfo').textContent =
-            `Optimal: bounding height ${h.toFixed(1)} cm, volume ${bestBoundingVol.toFixed(0)} cm³`;
+            `Optimal: height ${h.toFixed(1)} cm, bounding vol ${bestBoundingVol.toFixed(0)} cm³`;
     }
 }
 
@@ -1015,7 +873,6 @@ function rotateItem90(axis, direction) {
     item.quaternion.normalize();
     snapQuaternionTo90(item.quaternion);
     item.updateMatrixWorld(true);
-    constrainToContainer(item);
 
     pushUndo(before);
     updateCollisions();
@@ -1066,15 +923,6 @@ function setupUI() {
     document.getElementById('optimalPackBtn').addEventListener('click', optimalPack);
     document.getElementById('undoBtn').addEventListener('click', undo);
     document.getElementById('redoBtn').addEventListener('click', redo);
-
-    document.getElementById('updateContainer').addEventListener('click', () => {
-        containerDims.w = parseFloat(document.getElementById('containerW').value) || 60;
-        containerDims.h = parseFloat(document.getElementById('containerH').value) || 40;
-        containerDims.d = parseFloat(document.getElementById('containerD').value) || 40;
-        createContainer();
-        updateCollisions();
-        render();
-    });
 
     updateUndoRedoButtons();
 }
@@ -1132,16 +980,33 @@ function updateItemsList() {
 }
 
 function updateStats() {
-    const containerVol = containerDims.w * containerDims.h * containerDims.d;
     let itemsVol = 0;
     packedItems.forEach(item => {
         const dims = item.userData.config.dims;
         itemsVol += dims[0] * dims[1] * dims[2];
     });
-    const pct = containerVol > 0 ? ((itemsVol / containerVol) * 100).toFixed(1) : 0;
     document.getElementById('statVolUsed').textContent = itemsVol.toLocaleString();
-    document.getElementById('statVolTotal').textContent = containerVol.toLocaleString();
-    document.getElementById('statPercent').textContent = pct + '%';
+
+    if (packedItems.length === 0) {
+        document.getElementById('statBBox').textContent = '—';
+        document.getElementById('statBBoxVol').textContent = '0';
+        return;
+    }
+
+    // Compute bounding box of all items
+    const totalBBox = new THREE.Box3();
+    packedItems.forEach(item => {
+        totalBBox.expandByObject(item);
+    });
+    const size = new THREE.Vector3();
+    totalBBox.getSize(size);
+    const bw = (size.x / SCALE).toFixed(1);
+    const bh = (size.y / SCALE).toFixed(1);
+    const bd = (size.z / SCALE).toFixed(1);
+    const bboxVol = (size.x / SCALE) * (size.y / SCALE) * (size.z / SCALE);
+
+    document.getElementById('statBBox').textContent = `${bw}×${bh}×${bd}`;
+    document.getElementById('statBBoxVol').textContent = Math.round(bboxVol).toLocaleString();
 }
 
 // ============================================

@@ -116,45 +116,6 @@ body {
 }
 
 /* ============================================
-   Container Inputs
-   ============================================ */
-
-.container-inputs {
-    display: flex;
-    gap: 8px;
-    align-items: end;
-}
-
-.input-group {
-    flex: 1;
-}
-
-.input-group label {
-    display: block;
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-    font-weight: 500;
-}
-
-.input-group input {
-    width: 100%;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    padding: 6px 8px;
-    border-radius: var(--radius);
-    font-size: 0.85rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color var(--transition);
-}
-
-.input-group input:focus {
-    border-color: var(--accent);
-}
-
-/* ============================================
    Buttons
    ============================================ */
 
