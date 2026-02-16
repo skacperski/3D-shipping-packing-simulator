@@ -94,7 +94,50 @@
                 </div>
             </section>
 
-            <!-- Controls -->
+            <!-- Undo / Redo -->
+            <section class="panel-section">
+                <h2 class="section-title">History</h2>
+                <div class="undo-redo-row">
+                    <button id="undoBtn" class="btn btn-secondary btn-sm" disabled title="Undo (Ctrl+Z)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        Undo
+                    </button>
+                    <button id="redoBtn" class="btn btn-secondary btn-sm" disabled title="Redo (Ctrl+Shift+Z)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg>
+                        Redo
+                    </button>
+                </div>
+            </section>
+
+            <!-- Packing Algorithms -->
+            <section class="panel-section">
+                <h2 class="section-title">Pack Algorithms</h2>
+                <div class="pack-buttons">
+                    <button id="autoPackBtn" class="btn btn-pack" title="Greedy bottom-left-back packing">
+                        <span class="pack-icon">📐</span>
+                        <span class="pack-info">
+                            <strong>Auto Pack</strong>
+                            <small>Greedy placement</small>
+                        </span>
+                    </button>
+                    <button id="randomPackBtn" class="btn btn-pack" title="Random orientations and positions">
+                        <span class="pack-icon">🎲</span>
+                        <span class="pack-info">
+                            <strong>Random</strong>
+                            <small>Random placement</small>
+                        </span>
+                    </button>
+                    <button id="optimalPackBtn" class="btn btn-pack btn-pack-highlight" title="Tries many strategies to find most compact arrangement">
+                        <span class="pack-icon">🏆</span>
+                        <span class="pack-info">
+                            <strong>Optimal</strong>
+                            <small>Best of 54+ attempts</small>
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Options -->
             <section class="panel-section">
                 <h2 class="section-title">Options</h2>
                 <div class="control-options">
@@ -110,7 +153,6 @@
                 <div class="action-buttons">
                     <button id="deleteSelected" class="btn btn-danger btn-sm" disabled>Delete Selected</button>
                     <button id="clearAll" class="btn btn-danger btn-sm">Clear All</button>
-                    <button id="autoPackBtn" class="btn btn-primary btn-sm">Auto Pack</button>
                 </div>
             </section>
 
@@ -149,12 +191,12 @@
             <section class="panel-section shortcuts">
                 <h2 class="section-title">Shortcuts</h2>
                 <div class="shortcut-list">
+                    <span><kbd>Ctrl</kbd>+<kbd>Z</kbd> Undo</span>
+                    <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> Redo</span>
                     <span><kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd> Rotate +90°</span>
-                    <span><kbd>Shift</kbd>+<kbd>X</kbd>/<kbd>Y</kbd>/<kbd>Z</kbd> Rotate −90°</span>
+                    <span><kbd>Shift</kbd>+<kbd>X</kbd>/<kbd>Y</kbd>/<kbd>Z</kbd> −90°</span>
                     <span><kbd>Del</kbd> Delete</span>
                     <span><kbd>Esc</kbd> Deselect</span>
-                    <span><kbd>Scroll</kbd> Zoom</span>
-                    <span><kbd>RMB</kbd> Orbit</span>
                 </div>
             </section>
         </aside>
