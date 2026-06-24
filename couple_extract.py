@@ -2,7 +2,13 @@
 """Dane pary: Sebastian + Julka. Natal obojga + synastria + wskaznik relacji (kerykeion)."""
 import json
 from kerykeion import (AstrologicalSubjectFactory, NatalAspects,
-                       SynastryAspects, RelationshipScoreFactory)
+                       SynastryAspects, RelationshipScoreFactory,
+                       HouseComparisonFactory, CompositeSubjectFactory,
+                       KerykeionChartSVG)
+
+ACTIVE=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto',
+        'True_North_Lunar_Node','True_South_Lunar_Node','Juno','Chiron','Mean_Lilith',
+        'Ascendant','Medium_Coeli','Descendant','Imum_Coeli']
 
 ZNAKI={"Ari":"Baran","Tau":"Byk","Gem":"Bliznieta","Can":"Rak","Leo":"Lew","Vir":"Panna",
        "Lib":"Waga","Sco":"Skorpion","Sag":"Strzelec","Cap":"Koziorozec","Aqu":"Wodnik","Pis":"Ryby"}
@@ -17,7 +23,9 @@ PLANETY={"sun":"Slonce","moon":"Ksiezyc","mercury":"Merkury","venus":"Wenus","ma
          "jupiter":"Jowisz","saturn":"Saturn","uranus":"Uran","neptune":"Neptun","pluto":"Pluton"}
 EN2PL={"Sun":"Slonce","Moon":"Ksiezyc","Mercury":"Merkury","Venus":"Wenus","Mars":"Mars",
        "Jupiter":"Jowisz","Saturn":"Saturn","Uranus":"Uran","Neptune":"Neptun","Pluto":"Pluton",
-       "Ascendant":"Ascendent","Medium_Coeli":"MC"}
+       "Ascendant":"Ascendent","Medium_Coeli":"MC","Descendant":"Descendent",
+       "Juno":"Junona","True_North_Lunar_Node":"Wezel Polnocny","True_South_Lunar_Node":"Wezel Poludniowy",
+       "Chiron":"Chiron"}
 PHASE_PL={"New Moon":"Now","Waxing Crescent":"Przybywajacy sierp","First Quarter":"Pierwsza kwadra",
           "Waxing Gibbous":"Przybywajacy garb","Full Moon":"Pelnia","Waning Gibbous":"Ubywajacy garb",
           "Last Quarter":"Ostatnia kwadra","Waning Crescent":"Ubywajacy sierp"}
@@ -37,7 +45,8 @@ def numerologia(d,m,y):
 
 def osoba(name,d,m,y,h,mi,lng,lat,city):
     s=AstrologicalSubjectFactory.from_birth_data(name,year=y,month=m,day=d,hour=h,minute=mi,
-        lng=lng,lat=lat,tz_str="Europe/Warsaw",city=city,nation="PL",online=False)
+        lng=lng,lat=lat,tz_str="Europe/Warsaw",city=city,nation="PL",online=False,
+        active_points=ACTIVE)
     planety={PLANETY[k]:point(getattr(s,k)) for k in PLANETY}
     zyw={"Ogien":0,"Ziemia":0,"Powietrze":0,"Woda":0}; jak={"Kardynalna":0,"Stala":0,"Zmienna":0}
     for k in PLANETY:
@@ -84,7 +93,45 @@ score={"wartosc":rs.score_value,"opis":rs.score_description,"przeznaczenie":rs.i
        "rozbicie":[{"regula":b.rule,"opis":b.description,"punkty":b.points,"detale":b.details}
                    for b in rs.score_breakdown]}
 
-out={"sebastian":seb,"julka":jul,"synastria":syn[:14],"score":score}
+# --- nakladki domow (czyje planety w czyich domach) ---
+def overlays(hc_list):
+    out=[]
+    for o in hc_list:
+        nm=EN2PL.get(o.point_name)
+        if nm: out.append({"punkt":nm,"dom":o.projected_house_number})
+    return out
+hc=HouseComparisonFactory(seb_subj,jul_subj).get_house_comparison()
+overlay={"seb_w_domach_julki":overlays(hc.first_points_in_second_houses),
+         "jul_w_domach_seba":overlays(hc.second_points_in_first_houses)}
+
+# --- mapa zlozona (composite, punkty srodkowe) ---
+comp=CompositeSubjectFactory(seb_subj,jul_subj).get_midpoint_composite_subject_model()
+def cpoint(p):
+    return None if p is None else {"znak":zn(p.sign),"stopnie":round(p.position,2),
+                                   "dom":DOMY.get(getattr(p,"house",None))}
+composite={"slonce":cpoint(comp.sun),"ksiezyc":cpoint(comp.moon),
+           "ascendent":cpoint(getattr(comp,"ascendant",None)),
+           "wenus":cpoint(comp.venus),"mars":cpoint(comp.mars)}
+
+# --- Junona + Wezly (przeznaczenie) ---
+juno={"seb":point(seb_subj.juno),"jul":point(jul_subj.juno)}
+przeznaczenie=[]
+for a in SynastryAspects(seb_subj,jul_subj,active_points=ACTIVE).relevant_aspects:
+    p1=EN2PL.get(a.p1_name); p2=EN2PL.get(a.p2_name)
+    if not p1 or not p2: continue
+    if ("Wezel" in p1 or "Wezel" in p2 or "Junona" in (p1,p2)):
+        seb_pl,jul_pl=(p1,p2) if a.p1_owner=="Sebastian" else (p2,p1)
+        przeznaczenie.append({"seb":seb_pl,"aspekt":ASP_PL.get(a.aspect,a.aspect),
+                              "jul":jul_pl,"orb":round(a.orbit,2)})
+przeznaczenie.sort(key=lambda x:x["orb"])
+
+# --- wykres synastryczny SVG ---
+chart=KerykeionChartSVG(seb_subj,"Synastry",jul_subj,new_output_directory=".")
+chart.makeSVG()
+
+out={"sebastian":seb,"julka":jul,"synastria":syn[:14],"score":score,
+     "overlay":overlay,"composite":composite,"juno":juno,
+     "przeznaczenie":przeznaczenie[:8]}
 with open("couple.json","w",encoding="utf-8") as f:
     json.dump(out,f,ensure_ascii=False,indent=2)
 print("OK. score=",score["wartosc"],score["opis"],"| synastr aspektow:",len(syn))

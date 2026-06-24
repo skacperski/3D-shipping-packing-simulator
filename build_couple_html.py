@@ -191,6 +191,42 @@ val=SCORE["wartosc"]; pct=min(100,round(val/30*100)); poziom=SCORE["opis"]
 POZIOM_PL={"Minimal":"Minimalna","Medium":"Średnia","Important":"Znacząca",
  "Very Important":"Bardzo znacząca","Exceptional":"Wyjątkowa","Rare Exceptional":"Rzadka wyjątkowa"}
 
+# ========== DODATKOWE SEKCJE ==========
+DOM_OPIS={1:"jego/jej osobowość i pierwsze wrażenie",2:"finanse i poczucie bezpieczeństwa",
+ 3:"codzienna komunikacja i rozmowy",4:"dom, rodzinę i emocjonalne korzenie",
+ 5:"romans, zabawę i twórczość",6:"codzienne obowiązki, pracę i zdrowie",
+ 7:"partnerstwo i „tego drugiego”",8:"intymność, seks i głębokie więzi",
+ 9:"światopogląd, rozwój i poszukiwanie sensu",10:"karierę, status i cele publiczne",
+ 11:"przyjaźnie, marzenia i plany na przyszłość",12:"to, co ukryte, duchowość i podświadomość"}
+PUNKT_ROLA={"Slonce":"Jego rdzeń (Słońce)","Ksiezyc":"Jego emocje (Księżyc)",
+ "Wenus":"Jego miłość (Wenus)","Mars":"Jego pożądanie i napęd (Mars)","Ascendent":"Jego obecność"}
+PUNKT_ROLA_J={"Slonce":"Jej rdzeń (Słońce)","Ksiezyc":"Jej emocje (Księżyc)",
+ "Wenus":"Jej miłość (Wenus)","Mars":"Jej pożądanie i napęd (Mars)","Ascendent":"Jej obecność"}
+def by_punkt(lst):
+    return {x["punkt"]:x["dom"] for x in lst}
+OV=C["overlay"]; seb_in=by_punkt(OV["seb_w_domach_julki"]); jul_in=by_punkt(OV["jul_w_domach_seba"])
+def overlay_rows(mapping, rola):
+    rows=[]
+    for k in ["Slonce","Ksiezyc","Wenus","Mars"]:
+        if k in mapping:
+            dom=mapping[k]
+            rows.append(f'<div class="el"><span>{rola[k]} → dom {dom}</span><b>{DOM_OPIS.get(dom,"")}</b></div>')
+    return "".join(rows)
+
+CMP=C["composite"]; JUN=C["juno"]; PRZ=C["przeznaczenie"]
+def pt2(p):
+    if not p: return "—"
+    return f"{pl(p['znak'])} {p['stopnie']}°"
+
+# inline SVG wykresu synastrycznego
+try:
+    with open("Sebastian - Synastry Chart.svg",encoding="utf-8") as f:
+        SVG=f.read()
+    if SVG.startswith("<?xml"):
+        SVG=SVG[SVG.find("<svg"):]
+except FileNotFoundError:
+    SVG="<p class='reldesc'>(wykres SVG niedostępny — uruchom couple_extract.py)</p>"
+
 HTML=f"""<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sebastian & Julka — portrety i relacja</title>
@@ -251,7 +287,18 @@ padding:4px 0;border-bottom:1px solid #2a1c3b}}
 .tag.g{{background:rgba(95,208,138,.16);color:var(--good);border:1px solid var(--good)}}
 .tag.w{{background:rgba(231,161,78,.16);color:var(--warn);border:1px solid var(--warn)}}
 .caveat{{color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:12px;margin-top:18px}}
-@media(max-width:680px){{.pair,.who,.num{{grid-template-columns:1fr}}.num .eq{{display:none}}}}
+.ovwrap{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}}
+.ovcard{{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}}
+.ovcard:first-child{{border-top:4px solid var(--seb)}}
+.ovcard:last-child{{border-top:4px solid var(--jul)}}
+.ovcard h4{{margin:0 0 4px;font-size:16px}}
+.ovcard .reldesc{{margin:0 0 10px}}
+.chartwrap{{background:#fff;border-radius:16px;padding:10px;margin:6px 0;text-align:center}}
+.chartwrap svg{{width:100%;height:auto;max-width:880px}}
+.cmpgrid{{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}}
+.cmpchip{{background:#1a1029;border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:150px}}
+.cmpchip .l{{color:var(--mut);font-size:12px}} .cmpchip .v{{font-weight:700;font-size:15px}}
+@media(max-width:680px){{.pair,.who,.num,.ovwrap{{grid-template-columns:1fr}}.num .eq{{display:none}}}}
 </style></head><body>
 <div class="top">
   <h1>💞 Sebastian &amp; Julka</h1>
@@ -287,6 +334,77 @@ padding:4px 0;border-bottom:1px solid #2a1c3b}}
     „Średnia” to solidny, realny wynik — większość udanych par jest właśnie tu.</p>
   </div>
   {CHEMIA}{POROZUMIENIE}{TARCIA}{KIERUNEK}
+
+  <div class="relsec">
+    <h3>🏠 Nakładki domów — gdzie na siebie wpływacie</h3>
+    <p class="reldesc">Planety jednej osoby „lądują” w którymś z domów (sfer życia) drugiej.
+    To mówi, <b>którą część życia partnera najmocniej zapalasz</b>. Tu widać piękną wzajemność:</p>
+    <div class="ovwrap">
+      <div class="ovcard"><h4>🧔 Sebastian w życiu Julki</h4>
+        <p class="reldesc">Sebastian wnosi w życie Julki energię <b>romansu, domu i bliskości</b>:
+        jego Słońce rozświetla jej dom romansu i zabawy, jego miłość trafia w jej dom rodziny,
+        a jego Mars zapala dom intymności i głębokiej więzi.</p>
+        <div class="evbox">{overlay_rows(seb_in, PUNKT_ROLA)}</div></div>
+      <div class="ovcard"><h4>👩 Julka w życiu Sebastiana</h4>
+        <p class="reldesc">Julka dotyka <b>wewnętrznego i duchowego świata</b> Sebastiana
+        (jego dom 12), emocjonalnie <b>poszerza jego horyzonty</b> (dom 9), a jej miłość
+        i wdzięk trafiają prosto w jego poczucie siebie (dom 1).</p>
+        <div class="evbox">{overlay_rows(jul_in, PUNKT_ROLA_J)}</div></div>
+    </div>
+  </div>
+
+  <div class="relsec" style="border-left-color:var(--good)">
+    <h3>🌗 Mapa złożona (composite) — osobowość samego związku</h3>
+    <p class="reldesc">Łącząc punkty środkowe Waszych map, kerykeion tworzy <b>osobną mapę
+    „związku jako bytu”</b> — jaki jest Wasz duet sam w sobie, niezależnie od Was osobno.</p>
+    <div class="relnarr"><p>Wasz związek ma <b>Ascendent w Wadze</b> — a Waga to wprost
+    <b>znak partnerstwa</b>: na zewnątrz jesteście parą harmonijną, zgraną, dbającą o równość.
+    Jego <b>Słońce w Strzelcu</b> sprawia, że sercem związku jest <b>wspólny rozwój, podróże,
+    optymizm i nauka</b> (idealnie spina się to z Waszą „liczbą pary” 5!). A <b>Księżyc w Lwie</b>
+    daje relacji <b>ciepło, zabawę, dumę z siebie nawzajem</b> i rozkwit w gronie przyjaciół.</p></div>
+    <div class="cmpgrid">
+      <div class="cmpchip"><div class="l">☉ Słońce związku</div><div class="v">{pt2(CMP['slonce'])}</div></div>
+      <div class="cmpchip"><div class="l">☽ Księżyc związku</div><div class="v">{pt2(CMP['ksiezyc'])}</div></div>
+      <div class="cmpchip"><div class="l">⬆ Ascendent związku</div><div class="v">{pt2(CMP['ascendent'])}</div></div>
+      <div class="cmpchip"><div class="l">♀ Wenus związku</div><div class="v">{pt2(CMP['wenus'])}</div></div>
+      <div class="cmpchip"><div class="l">♂ Mars związku</div><div class="v">{pt2(CMP['mars'])}</div></div>
+    </div>
+  </div>
+
+  <div class="relsec" style="border-left-color:var(--warn)">
+    <h3>💍 Junona i Węzły — wątek „przeznaczenia”</h3>
+    <p class="reldesc">Junona to asteroida <b>wzorca „tego jednego” partnera</b>, a węzły księżycowe
+    to oś <b>karmy i kierunku duszy</b>. Tu jest najciekawiej:</p>
+    <div class="relnarr">
+    <p><b>Junona (ideał partnera):</b> Sebastian (Junona w Koziorożcu) szuka kogoś
+    <b>stałego, lojalnego, rodzinnego</b>; Julka (Junona w Wodniku) — kogoś <b>niezależnego,
+    oryginalnego, dającego wolność</b>. Ciekawy zbieg: jej „znak idealnego partnera” (Wodnik) to
+    dokładnie <b>znak Słońca Sebastiana</b> — on z natury jest tym „wodnikowym”, wolnościowym
+    typem, którego ona podświadomie szuka. (Bezpośrednich ścisłych aspektów Junony brak — ten
+    wątek działa raczej na poziomie symbolu znaku niż twardego aspektu.)</p>
+    <p><b>Węzły (przeznaczenie):</b> najmocniejszy kontakt to <b>MC Sebastiana dokładnie na
+    Węźle Północnym Julki</b> (orb 0,45°) — symbolicznie: <b>jego droga życiowa splata się z
+    kierunkiem rozwoju jej duszy</b>, „pomagacie sobie iść tam, dokąd macie iść”. Do tego węzły
+    Julki idealnie zgrane z jej Chironem przy Waszym kontakcie (orb 0,15°) wzmacniają nutę
+    <b>wzajemnego uzdrawiania</b>.</p>
+    <p class="reldesc">⚠️ Formalny wskaźnik „destiny sign” kerykeiona = <b>{("tak" if SCORE["przeznaczenie"] else "nie")}</b>
+    (liczy tylko aspekty Słońce–Księżyc/Słońce–Słońce). Czyli „przeznaczenie” widać tu w węzłach,
+    nie w klasycznym aspekcie słonecznym — uczciwie to rozdzielam.</p>
+    </div>
+    <details class="ev"><summary>📊 Aspekty węzłów/Junony (S = Sebastian, J = Julka)</summary>
+      <div class="evbox">
+        {el("☽ Junona Sebastiana", pt(JUN['seb']))}{el("☽ Junona Julki", pt(JUN['jul']))}
+        {''.join(el(f"{pl(a['seb'])} (S) – {pl(a['jul'])} (J)", f"{pl(a['aspekt'])} · orb {a['orb']}°") for a in PRZ[:6])}
+      </div></details>
+  </div>
+
+  <div class="relsec" style="border-left-color:var(--seb)">
+    <h3>🖼️ Wykres synastryczny</h3>
+    <p class="reldesc">Dwie mapy nałożone na siebie: wewnętrzne koło to Sebastian, zewnętrzne —
+    Julka. Linie w środku to aspekty między Waszymi planetami (czerwone = napięcia,
+    niebieskie/zielone = harmonia).</p>
+    <div class="chartwrap">{SVG}</div>
+  </div>
 
   <h2 class="sectitle">🔢 Numerologia pary</h2>
   <div class="num">
