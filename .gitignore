@@ -6,4 +6,5 @@ __pycache__/
 *.pyc
 # Wygenerowane pliki z danymi osobowymi
 data.json
+couple.json
 index.html
