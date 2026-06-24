@@ -4,3 +4,6 @@
 .venv/
 __pycache__/
 *.pyc
+# Wygenerowane pliki z danymi osobowymi
+data.json
+index.html
