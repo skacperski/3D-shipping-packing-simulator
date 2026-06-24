@@ -1,5 +1,6 @@
 .playwright-mcp/
 *.png
+*.svg
 .venv/
 __pycache__/
 *.pyc
