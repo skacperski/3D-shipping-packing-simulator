@@ -7,4 +7,6 @@ __pycache__/
 # Wygenerowane pliki z danymi osobowymi
 data.json
 couple.json
+forecast.json
 index.html
+forecast.html
