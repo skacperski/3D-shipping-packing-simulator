@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sowa Liczba – korepetytor z ułamków i rachunków w pamięci</title>
+<style>
+:root{--bg:#f3f6fd;--ink:#1f2937;--mut:#6b7280;--pri:#4f46e5;--pri2:#eef2ff;--ok:#15803d;--okbg:#dcfce7;--bad:#b91c1c;--badbg:#fee2e2;--acc:#f59e0b;--line:#e5e7eb}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:18px;line-height:1.55}
+#app{display:grid;grid-template-columns:330px 1fr;grid-template-rows:58px 1fr;height:100vh;height:100dvh}
+header{grid-column:1/3;display:flex;align-items:center;gap:12px;padding:0 16px;background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff}
+header h1{font-size:19px;margin:0;flex:1;font-weight:700}
+#menu{display:none;background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:10px;font-size:20px;padding:6px 12px;cursor:pointer}
+#stars{font-weight:700;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;font-size:16px;white-space:nowrap}
+#side{overflow:auto;background:#fff;border-right:1px solid var(--line);padding:10px 10px 30px}
+#side details{margin:6px 0;border:1px solid var(--line);border-radius:12px;background:#fafbff}
+#side summary{cursor:pointer;padding:10px 12px;font-weight:700;font-size:16px;list-style:none}
+#side summary small{display:block;font-weight:500;color:var(--mut);font-size:13px}
+#side summary::-webkit-details-marker{display:none}
+.tk{display:flex;width:100%;gap:8px;align-items:center;text-align:left;border:0;background:transparent;padding:8px 12px;font:inherit;font-size:15px;cursor:pointer;border-top:1px solid var(--line);color:var(--ink)}
+.tk:hover{background:var(--pri2)}
+.tk.act{background:var(--pri2);font-weight:700}
+.tk .st{margin-left:auto;font-size:13px;white-space:nowrap;color:#d97706}
+.tk .ck{width:20px;text-align:center}
+#reset{margin:14px 6px 0;font-size:13px;color:var(--mut);background:none;border:0;text-decoration:underline;cursor:pointer}
+main{display:flex;flex-direction:column;min-height:0;min-width:0}
+#chat{flex:1;overflow:auto;padding:16px 18px 8px;scroll-behavior:smooth}
+.msg{display:flex;gap:10px;margin:10px 0;max-width:780px;animation:pop .25s ease-out}
+.msg.me{justify-content:flex-end;margin-left:auto}
+.av{font-size:30px;line-height:1;flex:none;margin-top:2px}
+.bub{background:#fff;border:1px solid var(--line);border-radius:6px 18px 18px 18px;padding:10px 15px;box-shadow:0 1px 3px rgba(0,0,0,.05);min-width:0}
+.me .bub{background:var(--pri);color:#fff;border:0;border-radius:18px 6px 18px 18px}
+.msg.good .bub{background:var(--okbg);border-color:#86efac}
+.msg.warn .bub{background:#fff7ed;border-color:#fdba74}
+.msg.info .bub{background:#eff6ff;border-color:#93c5fd}
+.msg.head .bub{background:linear-gradient(90deg,#eef2ff,#faf5ff);border-color:#c7d2fe}
+.msg.head h3{margin:0 0 2px;font-size:20px}
+.pg{font-size:13px;color:var(--mut)}
+.ex{background:var(--pri2);border-left:5px solid var(--pri);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:17px}
+.tip{color:#92400e}
+.expr{display:inline-block;background:var(--pri2);border-radius:8px;padding:1px 10px;font-weight:700;font-size:1.15em;margin:2px 0}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.2;font-size:.95em}
+.fr span:first-child{border-bottom:2px solid currentColor;padding:0 4px}
+.fr span:last-child{padding:0 4px}
+pre.col{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 14px;font-size:18px;line-height:1.35;display:inline-block;margin:6px 0;overflow:auto;max-width:100%}
+table.tb{border-collapse:collapse;margin:6px 0;font-size:16px}
+table.tb td,table.tb th{border:1px solid #cbd5e1;padding:3px 10px}
+table.tb th{background:#f1f5f9}
+#dock{padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);min-height:78px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-size:17px;font-weight:700;border:2px solid var(--pri);color:var(--pri);background:#fff;border-radius:12px;padding:9px 18px;cursor:pointer}
+.btn.primary{background:var(--pri);color:#fff}
+.btn.ghost{border-color:var(--line);color:var(--mut);font-weight:600}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+input.inp,.fld input,.wrow input{font:inherit;font-size:20px;font-weight:600;border:2px solid #c7d2fe;border-radius:12px;padding:8px 12px;width:200px;max-width:100%}
+input.bad{border-color:var(--bad);background:var(--badbg)}
+input.good{border-color:#16a34a;background:var(--okbg)}
+.grid{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+.fld{display:flex;flex-direction:column;font-size:14px;color:var(--mut);font-weight:600}
+.fld input{width:130px;margin-top:2px}
+.opts{display:flex;flex-direction:column;gap:8px;width:100%}
+.opt{font:inherit;font-size:17px;text-align:left;border:2px solid #c7d2fe;background:#fff;border-radius:12px;padding:9px 14px;cursor:pointer}
+.opt:hover{background:var(--pri2)}
+.opt.sel{background:var(--pri2);border-color:var(--pri);font-weight:700}
+.opt.bad{background:var(--badbg);border-color:var(--bad);text-decoration:line-through;opacity:.8}
+.opt.good{background:var(--okbg);border-color:#16a34a}
+.opt:disabled{cursor:default}
+.widget{background:#fff;border:2px dashed #a5b4fc;border-radius:16px;padding:12px 16px;margin:6px 0;max-width:560px}
+.wrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.wrow .btn{padding:6px 12px;font-size:16px}
+.wres{font-size:22px;font-weight:700;background:var(--pri2);border-radius:10px;padding:8px 12px}
+.wres small{display:block;font-size:14px;font-weight:500;color:var(--mut)}
+.big{font-size:44px;text-align:center}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .3s}
+@media(max-width:820px){
+ body{font-size:17px}
+ #app{grid-template-columns:1fr}
+ #menu{display:block}
+ #side{position:fixed;top:58px;bottom:0;left:0;width:88%;max-width:360px;z-index:10;transform:translateX(-102%);transition:transform .25s;box-shadow:4px 0 20px rgba(0,0,0,.2)}
+ #side.open{transform:none}
+ header h1{font-size:16px}
+ #chat{padding:10px}
+ .av{font-size:26px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+ <header><button id="menu" aria-label="Lista zadań">☰</button><h1>🦉 Sowa Liczba – Twój korepetytor</h1><div id="stars">⭐ 0</div></header>
+ <aside id="side"></aside>
+ <main><div id="chat" aria-live="polite"></div><div id="dock"></div></main>
+</div>
+<script>
+'use strict';
+/* ====== narzędzia ====== */
+const R=x=>Math.round(x*1e12)/1e12;
+const ev=e=>R(Function('"use strict";return ('+e+')')());
+function fmt(n){
+  n=R(n);let s=String(n);
+  if(/e/.test(s))s=n.toFixed(12).replace(/0+$/,'').replace(/\.$/,'');
+  let [i,d]=s.split('.');const neg=i[0]==='-';if(neg)i=i.slice(1);
+  if(i.length>=5)i=i.replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+  return (neg?'−':'')+i+(d?','+d:'');
+}
+function parse(t){
+  t=String(t).trim().replace(/[\s ]/g,'').replace(/,/g,'.').replace(/−/g,'-').replace(/[a-zA-Zżółćęśąźń²³%]+$/g,'');
+  if(/^-?\d+(\.\d+)?\/\d+(\.\d+)?$/.test(t)){const [a,b]=t.split('/');return R(a/b)}
+  if(!/^-?(\d+\.?\d*|\.\d+)$/.test(t))return NaN;
+  return R(parseFloat(t));
+}
+const close=(a,b)=>Math.abs(a-b)<=1e-9*Math.max(1,Math.abs(b));
+function disp(e){
+  return e.replace(/(\d+(?:\.\d+)?)\*\*2/g,'$1²').replace(/(\d+(?:\.\d+)?)\*\*3/g,'$1³')
+    .replace(/\)\*\*2/g,')²').replace(/\)\*\*3/g,')³')
+    .replace(/\*/g,' · ').replace(/\//g,' : ').replace(/-/g,' − ').replace(/\+/g,' + ')
+    .replace(/(\d)\.(\d)/g,'$1,$2').replace(/\s{2,}/g,' ');
+}
+const FR=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const norm=s=>String(s).toLowerCase().replace(/[ąćęłńóśźż]/g,c=>({ą:'a',ć:'c',ę:'e',ł:'l',ń:'n',ó:'o',ś:'s',ź:'z',ż:'z'}[c])).replace(/[^a-z0-9]/g,'');
+/* przesunięcie przecinka: napis z kropką -> napis z przecinkiem */
+function shiftComma(str,k){
+  str=String(str).replace(',','.');
+  let [i,d='']=str.split('.');
+  let digits=i+d,pos=i.length+k;
+  if(pos<=0){digits='0'.repeat(1-pos)+digits;pos=1}
+  while(pos>digits.length)digits+='0';
+  let ip=digits.slice(0,pos).replace(/^0+(?=\d)/,''),fp=digits.slice(pos).replace(/0+$/,'');
+  return fp?ip+','+fp:ip;
+}
+/* ====== treść lekcji ====== */
+const CH=[];
+const ch=(title,pages,icon,tasks)=>CH.push({title,pages,icon,tasks});
+const T=h=>({t:'say',h});
+const N=(q,a,o={})=>({t:'num',q,a:typeof a==='string'?ev(a):a,...o});
+const M=(q,fields,o={})=>({t:'multi',q,fields:fields.map(f=>({l:f[0],a:typeof f[1]==='string'?ev(f[1]):f[1],u:f[2]||''})),...o});
+const C=(q,opts,a,o={})=>({t:'choice',q,opts,a,...o});
+const X=(q,acc,o={})=>({t:'text',q,acc,...o});
+const NB=(q,o={})=>({t:'note',q,...o});
+const W=(name)=>({t:'widget',name});
+const F=(...a)=>a.flat(Infinity);
+/* zestaw przykładów: ['a) 4+5', ['b) 6-2',{sol:'...'}], ...] */
+function I(list,o={}){
+  const core=o.core||list.length,out=[];
+  list.forEach((it,k)=>{
+    let e=it,op={};
+    if(Array.isArray(it)){e=it[0];op=it[1]||{}}
+    let lab='';const m=/^([a-z])\)\s*(.*)$/.exec(e);
+    if(m){lab=m[1]+') ';e=m[2]}
+    const show=op.show||disp(e);
+    const s=Object.assign({t:'num',a:ev(e),hint:o.hint,sol:o.sol,unit:o.unit},op);
+    s.q=(o.pre===undefined?'Oblicz: ':o.pre)+lab+'<span class="expr">'+show+' = ?</span>';
+    delete s.show;
+    out.push(s);
+    if(k===core-1&&list.length>core)out.push({t:'gate',skip:list.length-core});
+  });
+  return out;
+}
+
+/* ================= ROZDZIAŁ 1 ================= */
+ch('Liczby naturalne w pamięci','s. 10–11','🧮',[
+{title:'Ćwiczenie A – dodawanie i odejmowanie',steps:F(
+ T(`Zaczynamy od liczenia w głowie – bez kartki! 🧠<br>Sekret nie polega na super-mózgu, tylko na tym, żeby <b>rozbijać liczby na wygodne kawałki</b>.`),
+ T(`<b>Dodawanie – dobijamy do okrągłej liczby.</b>
+  <div class="ex">78 + 12<br>① 78 + <b>2</b> = 80 &nbsp;(dobiliśmy do pełnej dziesiątki)<br>② 80 + <b>10</b> = <b>90</b></div>
+  <div class="ex">253 + 407<br>Setki: 200 + 400 = 600<br>Reszta: 53 + 7 = 60<br>Razem: 600 + 60 = <b>660</b></div>`),
+ T(`<b>Odejmowanie – odejmuj po kawałku.</b>
+  <div class="ex">106 − 42<br>① 106 − 40 = 66<br>② 66 − 2 = <b>64</b></div>
+  <div class="ex">548 − 490 = 548 − 500 + 10 = <b>58</b><br>Odjęliśmy o 10 za dużo, więc 10 oddajemy z powrotem.</div>`),
+ I([
+  ['a) 78+12',{sol:'78 + 2 = 80, potem 80 + 10 = 90.'}],
+  ['b) 253+407',{sol:'200 + 400 = 600, 53 + 7 = 60, razem 660.'}],
+  ['c) 630+3019',{sol:'3019 + 600 = 3619, potem + 30 = 3649.'}],
+  ['d) 7200+850',{sol:'7200 + 800 = 8000, potem + 50 = 8050.'}],
+  ['e) 106-42',{sol:'106 − 40 = 66, potem 66 − 2 = 64.'}],
+  ['f) 548-490',{sol:'548 − 500 = 48, a ponieważ odjęliśmy o 10 za dużo, dodajemy 10: 58.'}],
+  ['g) 2020-815',{sol:'2020 − 800 = 1220, potem 1220 − 15 = 1205.'}],
+  ['h) 3500-240',{sol:'3500 − 200 = 3300, potem 3300 − 40 = 3260.'}]
+ ],{core:5,hint:'Rozbij drugą liczbę na wygodne kawałki (np. 12 = 2 + 10) albo dobij do okrągłej liczby.'}),
+ C(`Sprawdzam, czy rozumiesz! Które sposoby są <b>poprawne</b> dla 2020 − 815? (zaznacz wszystkie dobre)`,[
+  '2020 − 800 = 1220, potem 1220 − 15 = 1205',
+  '2020 − 800 = 1220, potem 1220 + 15 = 1235',
+  '2020 − 1000 = 1020, potem 1020 + 185 = 1205 (bo 815 = 1000 − 185)',
+  '2020 − 15 = 2005, potem 2005 − 800 = 1205'
+ ],[0,2,3],{hint:'Gdy odejmujesz po kawałku, kolejność nie ma znaczenia. Gdy odejmiesz za dużo – trzeba oddać różnicę.',ok:'Właśnie! Jest wiele dróg do tego samego wyniku. Wybieraj tę, która jest dla Ciebie najłatwiejsza. 😉'}),
+ NB(`W książce jest polecenie: <i>„Opowiedz, jak wykonujesz rachunki”</i>. Powiedz na głos (komuś albo sobie), jak liczysz <b>7200 + 850</b>. Dasz radę w dwóch zdaniach?`)
+)},
+{title:'Ćwiczenie B – mnożenie i dzielenie',steps:F(
+ T(`<b>Mnożenie – rozbij jedną liczbę.</b>
+  <div class="ex">48 · 2 = 40 · 2 + 8 · 2 = 80 + 16 = <b>96</b></div>
+  <div class="ex">204 · 4 = 200 · 4 + 4 · 4 = 800 + 16 = <b>816</b></div>
+  Z zerami: 6 · 110 = 6 · 100 + 6 · 10 = 600 + 60 = <b>660</b>.`),
+ T(`<b>Dzielenie – też możesz rozbijać.</b>
+  <div class="ex">108 : 4 = (100 + 8) : 4 = 25 + 2 = <b>27</b></div>
+  <div class="ex">350 : 7 → 35 : 7 = 5, a 350 to „dziesięć razy więcej”, więc <b>50</b></div>
+  Dzielenie zawsze możesz <b>sprawdzić mnożeniem</b>: 75 : 15 = 5, bo 15 · 5 = 75.`),
+ I([
+  ['a) 48*2',{sol:'40 · 2 + 8 · 2 = 80 + 16 = 96.'}],
+  ['b) 204*4',{sol:'200 · 4 + 4 · 4 = 800 + 16 = 816.'}],
+  ['c) 6*110',{sol:'6 · 100 + 6 · 10 = 600 + 60 = 660.'}],
+  ['d) 350*3',{sol:'300 · 3 + 50 · 3 = 900 + 150 = 1050.'}],
+  ['e) 60/5',{sol:'12 · 5 = 60, więc wynik to 12.'}],
+  ['f) 75/15',{sol:'15 · 5 = 75, więc wynik to 5.'}],
+  ['g) 350/7',{sol:'35 : 7 = 5, więc 350 : 7 = 50.'}],
+  ['h) 108/4',{sol:'100 : 4 = 25, 8 : 4 = 2, razem 27.'}]
+ ],{core:6,hint:'Rozbij jedną z liczb na „setki + dziesiątki + jedności” i policz osobno.'}),
+ C(`Jak najlepiej sprawdzić, czy <b>108 : 4 = 27</b> jest poprawne?`,[
+  'Pomnożyć: 27 · 4 – powinno wyjść 108',
+  'Dodać: 27 + 4',
+  'Odjąć: 108 − 27',
+  'Nie da się tego sprawdzić'
+ ],0,{hint:'Dzielenie i mnożenie to „odwrotne” działania.',ok:'Tak! 27 · 4 = 108 ✓. To Twój wbudowany sprawdzacz błędów.'})
+)},
+{title:'Ćwiczenie C – liczby z zerami na końcu',steps:F(
+ T(`Przy liczbach z zerami na końcu jest świetny trik.<br><b>Mnożenie:</b> pomnóż liczby bez zer, a potem <b>dopisz wszystkie zera</b>.
+  <div class="ex">130 · 200<br>13 · 2 = 26, zer było 1 + 2 = 3<br>Wynik: 26 <b>000</b></div>
+  <div class="ex">250 · 40 → 25 · 4 = <b>100</b>, zer było 2 → 100<b>00</b> = 10 000</div>
+  Uwaga! Jeśli wynik mnożenia <i>sam</i> ma zero na końcu (jak 100), te zera też zostają.`),
+ T(`<b>Dzielenie:</b> skreśl po tyle samo zer w obu liczbach.
+  <div class="ex">42 000 : 700 → skreślamy po 2 zera → 420 : 7 = <b>60</b></div>
+  Wynik się nie zmienia, bo dzielimy obie liczby przez to samo (przez 100).`),
+ N(`Ile zer dopiszesz do wyniku 13 · 2 w zadaniu <b>130 · 200</b>?`,3,{hint:'Policz zera w obu liczbach: w 130 jest 1, a w 200 są 2.'}),
+ N(`A ile to <b>250 · 40</b>?`,10000,{hint:'25 · 4 = 100, a potem dopisz 2 zera.',sol:'25 · 4 = 100 i dopisujemy dwa zera: 10 000.'}),
+ I([
+  ['a) 370*200',{sol:'37 · 2 = 74, dopisz 3 zera (1 + 2): 74 000.'}],
+  ['b) 500*8000',{sol:'5 · 8 = 40, dopisz 5 zer (2 + 3): 40 00000 = 4 000 000.'}],
+  ['c) 1640000/4000',{show:'1 640 000 : 4000',sol:'Skreśl po 3 zera: 1640 : 4 = 410.'}],
+  ['d) 32000/160',{show:'32 000 : 160',sol:'Skreśl po 1 zerze: 3200 : 16 = 200.'}]
+ ],{hint:'Mnożenie: dopisz wszystkie zera. Dzielenie: skreśl po tyle samo zer.'}),
+ C(`Dlaczego przy dzieleniu <b>wolno</b> skreślić po tyle samo zer w obu liczbach?`,[
+  'Bo wynik dzielenia się nie zmienia, gdy obie liczby podzielimy przez to samo',
+  'Bo zera nic nie znaczą',
+  'Bo wtedy wynik robi się dwa razy mniejszy'
+ ],0,{ok:'Dokładnie. Skreślenie zer = dzielenie obu liczb przez 10, 100, 1000… A to nie zmienia wyniku.'})
+)},
+{title:'Zadanie 1 – dodawanie i odejmowanie',steps:F(
+ T(`Zadanie 1 ze strony 11. Dwanaście przykładów – pokaż, co potrafisz! Pamiętaj: dobijaj do okrągłych liczb i rozbijaj na kawałki.`),
+ I(['a) 62+78','b) 182+43','c) 437+302','d) 1640+2020','e) 154+1024','f) 459+57','g) 97-29','h) 205-64','i) 687-232','j) 1235-995','k) 1050-850','l) 6500-440'],
+  {core:6,hint:'Np. 459 + 57: 459 + 1 = 460, potem 460 + 56. Albo odejmuj/dodawaj po kawałku: 97 − 29 = 97 − 30 + 1.'})
+)},
+{title:'Zadanie 2 – mnożenie i dzielenie',steps:F(
+ T(`Zadanie 2. Teraz mnożenie i dzielenie w pamięci. Przypomnij sobie triki: rozbijanie, sprawdzanie mnożeniem, 7 · 19 = 7 · 20 − 7.`),
+ I(['a) 97*2','b) 56*2','c) 109*3','d) 250*5','e) 211*100','f) 7*19','g) 72/4','h) 148/4','i) 120/5','j) 2800/7','k) 750/3','l) 279/9'],
+  {core:6,hint:'Rozbijaj: 97 · 2 = 100 · 2 − 3 · 2. Dzielenie sprawdź mnożeniem.'})
+)},
+{title:'Zadanie 3 – iloczyny i ilorazy z zerami',steps:F(
+ T(`Zadanie 3 – wykorzystaj trik z zerami z ćwiczenia C:<br>mnożenie → <b>dopisz wszystkie zera</b>, dzielenie → <b>skreśl po tyle samo</b>.`),
+ I(['a) 400*700','b) 2300*30','c) 2200*60','d) 120*500','e) 4900/70','f) 400/80','g) 45000/150','h) 880000/40'],
+  {core:5,hint:'Mnóż liczby bez zer, potem dopisz zera. Np. 2300 · 30 → 23 · 3 = 69 i 3 zera = 69 000.'})
+)},
+{title:'Zadanie 4 – odczytywanie liczb z osi',steps:F(
+ T(`Zadanie 4: odczytujemy liczby z <b>osi liczbowej</b>. Metoda w 3 krokach:
+  <div class="ex">① Znajdź dwie kreski, które mają napisane liczby.<br>② Policz, ile <b>odcinków</b> jest między nimi.<br>③ Różnicę liczb podziel na tyle odcinków – tyle wynosi <b>jeden odcinek</b>.</div>`),
+ N(`Ćwiczymy na przykładzie. Kreski podpisano: 20 i 30, a między nimi jest <b>5 równych odcinków</b>. Ile wynosi jeden odcinek?`,2,{hint:'30 − 20 = 10, a 10 podziel na 5 odcinków.'}),
+ N(`Sąsiednie kreski są podpisane <b>103</b> i <b>105</b>. Punkt D leży dokładnie <b>pośrodku</b> między nimi. Jaka to liczba?`,104,{hint:'Pośrodku między 103 a 105 to liczba, która jest o tyle samo od obu.'}),
+ C(`Jedna kreska na osi to 10, a następna to 15. Punkt leży dokładnie pośrodku. To liczba…`,['12,5','12','13','7,5'],0,{hint:'Dodaj obie liczby i podziel przez 2, albo znajdź połowę z 5.',ok:'Tak, (10 + 15) : 2 = 12,5.'}),
+ NB(`Teraz zrób to samo na <b>trzech osiach z książki</b>: wypisz w zeszycie liczby dla punktów C, B, D, A, potem H, E, F, G, a na końcu L, K, I, J. Pamiętaj: najpierw ustal, ile wynosi jeden odcinek!`,{hint:'Zacznij od dwóch podpisanych liczb na osi, policz odcinki między nimi i podziel różnicę przez ich liczbę.'})
+)},
+{title:'Zadanie 5 – wierszyk o ciężarówkach',steps:F(
+ T(`Zadanie 5 to wierszyk. 🚚 Policzymy krok po kroku:<br>100 ciężarówek · w każdej 100 worków · w każdym worku 100 paczek · w każdej paczce 100 banknotów (stuzłotowych).`),
+ N(`Ile banknotów mieści się w <b>jednej ciężarówce</b>? (100 worków · 100 paczek · 100 banknotów)`,1000000,{hint:'100 · 100 = 10 000, a potem jeszcze razy 100.',sol:'100 · 100 · 100 = 1 000 000 banknotów.'}),
+ N(`Ile banknotów jest w <b>100 ciężarówkach</b>?`,100000000,{hint:'1 000 000 · 100 – dopisz dwa zera.'}),
+ N(`Banknoty są stuzłotowe. Jaka to kwota (w zł)?`,10000000000,{hint:'Pomnóż liczbę banknotów przez 100.',sol:'100 000 000 · 100 = 10 000 000 000 zł (dziesięć miliardów!).'}),
+ N(`A gdyby to były banknoty <b>milionzłotowe</b> (każdy po 1 000 000 zł)? Ile takich banknotów trzeba, żeby uzbierać tę samą kwotę?`,10000,{hint:'10 000 000 000 : 1 000 000 – skreśl po 6 zer.'}),
+ C(`Czy do przewiezienia tych banknotów trzeba całej ciężarówki?`,[
+  'Nie – 10 000 banknotów to tylko jeden worek (100 paczek po 100 banknotów)',
+  'Tak, całej ciężarówki',
+  'Tak, i to kilku ciężarówek'
+ ],0,{hint:'Przypomnij: w jednym worku jest 100 paczek, a w paczce 100 banknotów.',ok:'Brawo! Jeden worek wystarczy. Duże liczby bywają zaskakujące. 😄'})
+)}
+]);
+
+/* ================= ROZDZIAŁ 2 ================= */
+const NUMS9=[8,97,82,146,789,1243,2576];
+const r9=(d,hint,sol)=>M(`Podaj <b>reszty z dzielenia</b> każdej z liczb przez <b>${d}</b>:`,NUMS9.map(n=>[String(n),n%d]),{hint,sol});
+const fac=(q,opts,hint)=>C(q,opts,0,{hint,fixed:false});
+ch('Liczby naturalne – działania, reszty, rozkłady','s. 12–13','🔢',[
+{title:'Zadanie 6 – sprytne mnożenie 28 · 15',steps:F(
+ T(`Troje dzieci policzyło <b>28 · 15</b> na trzy różne sposoby:
+  <div class="ex"><b>Paulina:</b> 28 · 15 = 280 + 140 = 420</div>
+  <div class="ex"><b>Konstanty:</b> 28 · 15 = 28 · 5 · 3 = 140 · 3 = 420</div>
+  <div class="ex"><b>Antek:</b> 28 · 15 = 30 · 15 − 2 · 15 = 450 − 30 = 420</div>`),
+ C(`Skąd Paulina wzięła 280 i 140?`,['28 · 10 = 280 i 28 · 5 = 140','28 + 10 i 28 + 5','28 · 2 i 28 · 7'],0,{hint:'15 = 10 + 5. Pomnóż 28 osobno przez każdą z tych liczb.',ok:'Tak: 15 = 10 + 5, więc 28 · 15 = 28 · 10 + 28 · 5.'}),
+ C(`Dlaczego Antek odjął <b>2 · 15</b>?`,['Bo 28 = 30 − 2, więc „za dużo” policzył 2 piętnastki','Bo 15 − 2 = 13','Bo lubi odejmować'],0,{hint:'Skąd się wzięło 30 · 15, skoro miało być 28 · 15?',ok:'Super! 30 to o 2 za dużo, więc odejmujemy 2 · 15.'}),
+ C(`Co zrobił Konstanty?`,['Rozłożył 15 na 5 · 3','Rozłożył 28 na 20 + 8','Pomnożył 28 przez 150'],0,{ok:'Tak: 15 = 5 · 3. A 28 · 5 = 140 jest łatwe (28 · 10 : 2).'}),
+ M(`Użyj sposobu <b>Pauliny</b> do <b>36 · 15</b>. Podaj dwa kawałki i wynik:`,[['36 · 10',360],['36 · 5',180],['razem',540]],{hint:'36 · 5 to połowa z 36 · 10.',sol:'360 + 180 = 540.'}),
+ N(`Wymyśl <b>własny sposób</b> i policz 28 · 15. (Podpowiedź: 28 : 2 = 14 i 15 · 2 = 30.) Ile wychodzi?`,420,{hint:'28 · 15 = 14 · 30.'})
+)},
+{title:'Zadanie 7 – mnożenie w pamięci',steps:F(
+ T(`Zadanie 7. Użyj trików z poprzedniego zadania:<br>• <b>19 = 20 − 1</b>, <b>18 = 20 − 2</b>, <b>99 = 100 − 1</b><br>• <b>12 = 10 + 2</b>, <b>11 = 10 + 1</b><br>• 210 = 200 + 10`),
+ I([
+  ['a) 35*19',{sol:'35 · 20 = 700, minus 35 = 665.'}],
+  ['b) 108*12',{sol:'108 · 10 = 1080, 108 · 2 = 216, razem 1296.'}],
+  ['c) 99*80',{sol:'100 · 80 = 8000, minus 80 = 7920.'}],
+  ['d) 70*19',{sol:'7 · 19 = 133, a potem razy 10: 1330.'}],
+  ['e) 16*14',{sol:'16 · 10 + 16 · 4 = 160 + 64 = 224.'}],
+  ['f) 87*11',{sol:'87 · 10 + 87 = 957.'}],
+  ['g) 35*18',{sol:'35 · 20 − 35 · 2 = 700 − 70 = 630.'}],
+  ['h) 15*210',{sol:'15 · 200 + 15 · 10 = 3000 + 150 = 3150.'}]
+ ],{hint:'Rozbij jedną liczbę na „okrągłą” i resztę, np. 19 = 20 − 1.'})
+)},
+{title:'Zadanie 8 – dzielenie z resztą',steps:F(
+ T(`Dzielenie z resztą: sprawdzamy, ile razy dzielnik „mieści się” w liczbie i <b>co zostaje</b>.
+  <div class="ex">87 : 21 = 4 reszta 3<br>bo 4 · 21 = 84, a 87 − 84 = 3<br>Równość: <b>87 = 4 · 21 + 3</b></div>
+  <b>Ważne:</b> reszta jest zawsze <b>mniejsza od dzielnika</b>!`),
+ M(`<b>59 : 22</b> – wpisz iloraz i resztę:`,[['iloraz',2],['reszta',15]],{hint:'2 · 22 = 44. Ile brakuje do 59?',sol:'2 · 22 = 44, a 59 − 44 = 15. Czyli 59 = 2 · 22 + 15.'}),
+ M(`<b>647 : 8</b>`,[['iloraz',80],['reszta',7]],{hint:'80 · 8 = 640.',sol:'80 · 8 = 640, a 647 − 640 = 7.'}),
+ M(`<b>352 : 70</b>`,[['iloraz',5],['reszta',2]],{hint:'5 · 70 = 350.',sol:'5 · 70 = 350, a 352 − 350 = 2.'}),
+ M(`<b>1614 : 500</b>`,[['iloraz',3],['reszta',114]],{hint:'3 · 500 = 1500.',sol:'3 · 500 = 1500, a 1614 − 1500 = 114.'}),
+ C(`Która równość wynika z dzielenia <b>59 : 22</b>?`,['59 = 2 · 22 + 15','59 = 22 · 15 + 2','59 = 2 · 15 + 22'],0,{hint:'Wzór: liczba = iloraz · dzielnik + reszta.',ok:'Dokładnie: liczba = iloraz · dzielnik + reszta.'}),
+ C(`Czy reszta z dzielenia przez 22 może wynosić 25?`,['Nie – reszta musi być mniejsza od dzielnika','Tak, jeśli liczba jest duża','Tak, zawsze'],0,{hint:'Gdyby reszta była 25, to dzielnik 22 zmieściłby się jeszcze raz!',ok:'Świetnie – to najważniejsza zasada dzielenia z resztą.'})
+)},
+{title:'Zadanie 9 – reszty z dzielenia przez 10, 5, 100, 50, 20, 25',steps:F(
+ T(`Są sprytne skróty, żeby <b>nie dzielić</b>:
+  <div class="ex">• przez <b>10</b> → reszta to <b>ostatnia cyfra</b> (789 → 9)<br>• przez <b>100</b> → reszta to <b>dwie ostatnie cyfry</b> (1243 → 43)<br>• przez <b>5</b> → reszta z dzielenia <i>ostatniej cyfry</i> przez 5 (789 → 9 : 5 = 1 r 4)<br>• przez <b>50, 20, 25</b> → weź <b>dwie ostatnie cyfry</b> i podziel je przez 50, 20 lub 25</div>
+  Liczby: <b>8, 97, 82, 146, 789, 1243, 2576</b>.`),
+ r9(10,'Reszta z dzielenia przez 10 to ostatnia cyfra.','Ostatnia cyfra każdej liczby.'),
+ r9(5,'Weź ostatnią cyfrę i sprawdź, ile zostaje po wyjęciu piątek (0–4).','Np. 789 → ostatnia cyfra 9, 9 = 5 + 4, reszta 4.'),
+ r9(100,'Dwie ostatnie cyfry (jeśli liczba ma mniej cyfr, to cała liczba).','Dwie ostatnie cyfry, np. 1243 → 43.'),
+ r9(50,'Weź dwie ostatnie cyfry. Jeśli są ≥ 50, odejmij 50.','Np. 1243 → 43 (mniej niż 50), 2576 → 76 − 50 = 26.'),
+ {t:'gate',skip:2},
+ r9(20,'Weź dwie ostatnie cyfry i odejmuj 20, aż zostanie mniej niż 20.','Np. 97 → 97 − 80 = 17.'),
+ r9(25,'Weź dwie ostatnie cyfry i odejmuj 25, aż zostanie mniej niż 25.','Np. 97 → 97 − 75 = 22; 2576 → 76 − 75 = 1.'),
+ C(`Dlaczego do reszty z dzielenia przez 100 wystarczą dwie ostatnie cyfry?`,['Bo reszta tysięcy, dziesiątek tysięcy itd. dzieli się przez 100 bez reszty','Bo 100 ma dwie cyfry… i tyle','Bo tak jest łatwiej, ale to nieprawda'],0,{ok:'Tak! 1243 = 1200 + 43, a 1200 dzieli się przez 100. Zostaje tylko 43.'})
+)},
+{title:'Zadanie 10 – reszty bez dzielenia',steps:F(
+ T(`Wiemy, że <b>280</b> daje resztę <b>7</b> z dzielenia przez 13. Co z liczbami obok?
+  <div class="ex">285 = 280 + <b>5</b> → reszta 7 + 5 = <b>12</b> (mniej niż 13, więc OK)<br>290 = 280 + <b>10</b> → 7 + 10 = 17, to więcej niż 13, więc odejmij 13 → <b>4</b><br>275 = 280 − <b>5</b> → reszta 7 − 5 = <b>2</b></div>
+  A co, gdy wyjdzie ujemna? Dodaj 13!`),
+ M(`Podaj reszty z dzielenia przez 13 dla:`,[285,290,275,270].map(n=>[String(n),n%13]),{hint:'270 = 280 − 10, więc 7 − 10 = −3, a to znaczy −3 + 13 = ?',sol:'285 → 12, 290 → 7 + 10 = 17 − 13 = 4, 275 → 7 − 5 = 2, 270 → 7 − 10 = −3, dodajemy 13: 10.'}),
+ C(`Reszta z dzielenia 280 przez 13 to 7. Jaka będzie reszta z dzielenia <b>293</b> przez 13?`,['7','20','0'],0,{hint:'293 = 280 + 13, a 13 dzieli się przez 13 bez reszty.',ok:'Tak! Dodanie wielokrotności dzielnika nie zmienia reszty.'})
+)},
+{title:'Zadanie 11 – liczby podzielne przez 17',steps:F(
+ T(`Reszta z dzielenia 375 przez 17 to 1. To znaczy, że <b>374</b> dzieli się przez 17 (374 = 17 · 22).
+  Kolejne liczby podzielne przez 17 znajdziemy, <b>dodając 17</b> do poprzedniej:
+  <div class="ex">374 + 17 = <b>391</b></div>`),
+ M(`Wymień liczby podzielne przez 17, które są <b>większe od 375 i mniejsze od 420</b> (od mniejszej):`,[['pierwsza',391],['druga',408]],{hint:'Dodawaj 17: 374 → 391 → ? → ? (aż przekroczysz 420)',sol:'374 + 17 = 391, 391 + 17 = 408, 408 + 17 = 425 – to już za dużo.'}),
+ C(`Skąd wiemy, że <b>374</b> dzieli się przez 17, skoro 375 daje resztę 1?`,['375 − 1 = 374 – odejmujemy resztę','Bo 374 < 375','Bo 374 jest parzysta'],0,{ok:'Zgadza się: liczba minus reszta zawsze jest podzielna przez dzielnik.'})
+)},
+{title:'Zadanie 12 – dzielniki liczby 420',steps:F(
+ T(`Rozkład: <b>420 = 2 · 2 · 3 · 5 · 7</b> (dzielimy przez 2, 2, 5, 3, 7 – patrz tabelka w książce).
+  <div class="ex">Dzielnik liczby 420 to każdy iloczyn tych czynników:<br>2 · 3 = 6, &nbsp;2 · 7 = 14, &nbsp;3 · 5 = 15, &nbsp;2 · 2 · 3 = 12, &nbsp;5 · 7 = 35 …</div>`),
+ C(`Zaznacz wszystkie <b>dzielniki liczby 420</b>:`,['12','14','22','25','28','35'],[0,1,4,5],{hint:'Sprawdź, czy da się je złożyć z czynników 2, 2, 3, 5, 7 – każdy użyty najwyżej tyle razy, ile jest w rozkładzie.',ok:'Dobrze! 22 = 2 · 11 (nie ma 11), a 25 = 5 · 5 (jest tylko jedna 5).'}),
+ C(`Czy 420 jest podzielna przez <b>22</b>?`,['Nie – 22 = 2 · 11, a w rozkładzie 420 nie ma jedenastki','Tak','Tylko czasami'],0,{hint:'Rozłóż 22 na czynniki pierwsze i zobacz, czy wszystkie są w rozkładzie 420.',ok:'Świetnie! Rozkład na czynniki pierwsze to prawdziwa supermoc.'})
+)},
+{title:'Zadanie 13 – rozkład na czynniki pierwsze',steps:F(
+ T(`<b>Liczby pierwsze</b> dzielą się tylko przez 1 i przez siebie: 2, 3, 5, 7, 11, 13, 17, 19, 23…<br>Rozkład: dziel liczbę przez najmniejsze liczby pierwsze, aż dojdziesz do 1.
+  <div class="ex">96 : 2 = 48 → 24 → 12 → 6 → 3 → 1 &nbsp;(dwójek było 5, potem trójka)<br><b>96 = 2·2·2·2·2·3</b></div>`),
+ C(`Która z liczb <b>nie jest pierwsza</b>?`,['21','13','11','2'],0,{hint:'Czy 21 dzieli się przez coś oprócz 1 i 21?',ok:'21 = 3 · 7.'}),
+ C(`Rozkład na czynniki pierwsze liczby <b>1000</b>:`,['2·2·2·5·5·5','10·10·10','4·250','2·5·10·10'],0,{hint:'Czynniki muszą być liczbami pierwszymi – 10 nie jest pierwsza.'}),
+ C(`Rozkład liczby <b>96</b>:`,['2·2·2·2·2·3','6·16','4·4·6','2·48'],0,{hint:'Dziel przez 2, dopóki się da.'}),
+ C(`Rozkład liczby <b>234</b>:`,['2·3·3·13','2·117','6·39','2·3·39'],0,{hint:'234 : 2 = 117, 117 : 3 = 39, 39 : 3 = 13.'}),
+ C(`Rozkład liczby <b>275</b>:`,['5·5·11','5·55','25·11','3·5·5·11'],0,{hint:'275 : 5 = 55, 55 : 5 = 11.'}),
+ C(`Rozkład liczby <b>2550</b>:`,['2·3·5·5·17','2·3·5·85','2·1275','50·51'],0,{hint:'2550 : 2 = 1275, 1275 : 3 = 425, 425 : 5 = 85, 85 : 5 = 17.'})
+)},
+{title:'Zadanie 14 – wspólne dzielniki',steps:F(
+ T(`<b>Wspólne dzielniki</b> dwóch liczb: znajdź <b>wspólne czynniki pierwsze</b> z obu rozkładów, a potem ich iloczyny.
+  <div class="ex">Np. 30 = 2·3·5 i 42 = 2·3·7<br>Wspólne czynniki: 2 i 3 → wspólne dzielniki (oprócz 1): <b>2, 3, 6</b></div>`),
+ C(`a) 770 = 2·5·7·11 oraz 1771 = 7·11·23. Zaznacz <b>wspólne dzielniki</b> (różne od 1):`,['7','11','77','2','23','154'],[0,1,2],{hint:'Wspólne czynniki to 7 i 11. Ich iloczyn też jest wspólnym dzielnikiem.',ok:'Tak: 7, 11 i 7 · 11 = 77.'}),
+ C(`b) 220 = 2²·5·11 oraz 7350 = 2·3·5²·7². Zaznacz <b>wspólne dzielniki</b> (różne od 1):`,['2','5','10','11','20','22'],[0,1,2],{hint:'Wspólne czynniki to 2 i 5. W 7350 jest tylko jedna dwójka, więc 20 odpada.',ok:'Dobrze: 2, 5 i 2 · 5 = 10.'})
+)},
+{title:'Zadanie 15 – wspólne wielokrotności 30 i 66',steps:F(
+ T(`<b>Najmniejsza wspólna wielokrotność (NWW)</b> – weź czynniki z obu rozkładów, <b>wspólne bierz tylko raz</b>.
+  <div class="ex">30 = 2 · 3 · 5<br>66 = 2 · 3 · 11<br>NWW = 2 · 3 · 5 · 11 (2 i 3 tylko raz!)</div>`),
+ N(`Ile wynosi <b>NWW(30, 66)</b>?`,330,{hint:'2 · 3 · 5 · 11 = 6 · 55.',sol:'2 · 3 = 6, 6 · 5 = 30, 30 · 11 = 330.'}),
+ M(`Wspólne wielokrotności 30 i 66 to <b>wielokrotności 330</b>. Wpisz te mniejsze od 1000:`,[['pierwsza',330],['druga',660],['trzecia',990]],{hint:'330, potem dodawaj 330.',sol:'330, 330 + 330 = 660, 660 + 330 = 990. Następna to 1320 – za duża.'})
+)},
+{title:'Zadanie 16 – kolejność działań',steps:F(
+ T(`Kolejność działań (jak w grze – są poziomy!):
+  <div class="ex">① <b>nawiasy</b><br>② <b>potęgi</b> (np. 5² = 5 · 5 = 25)<br>③ <b>mnożenie i dzielenie</b> – od lewej do prawej<br>④ <b>dodawanie i odejmowanie</b> – od lewej do prawej</div>`),
+ C(`Ile to <b>2 + 3 · 4</b>?`,['14','20'],0,{hint:'Mnożenie jest przed dodawaniem.',ok:'Tak: najpierw 3 · 4 = 12, potem 2 + 12 = 14.'}),
+ C(`Ile to <b>36 : 6 : 2</b>?`,['3 (od lewej: 36 : 6 = 6, potem 6 : 2)','12 (6 : 2 = 3, 36 : 3)'],0,{hint:'Dzielenie liczymy od lewej do prawej.',ok:'Tak, od lewej do prawej – 3.'}),
+ I([
+  ['a) 72-7*8',{sol:'Najpierw mnożenie: 7 · 8 = 56. Potem 72 − 56 = 16.'}],
+  ['b) 48/6+21',{sol:'48 : 6 = 8, potem 8 + 21 = 29.'}],
+  ['c) 36/9*5**2',{show:'36 : 9 · 5²',sol:'Potęga: 5² = 25. Potem od lewej: 36 : 9 = 4, 4 · 25 = 100.'}],
+  ['d) 72/(4*2)',{sol:'Nawias: 4 · 2 = 8. Potem 72 : 8 = 9.'}],
+  ['e) 36/6/2*3**3',{show:'36 : 6 : 2 · 3³',sol:'Potęga: 3³ = 27. Od lewej: 36 : 6 = 6, 6 : 2 = 3, 3 · 27 = 81.'}],
+  ['f) 5**2+4*8-6',{show:'5² + 4 · 8 − 6',sol:'25 + 32 − 6 = 51.'}],
+  ['g) 24+2*(6-3)**2',{show:'24 + 2 · (6 − 3)²',sol:'Nawias: 6 − 3 = 3. Potęga: 3² = 9. Mnożenie: 2 · 9 = 18. Dodawanie: 24 + 18 = 42.'}],
+  ['h) 17*2+27/3',{sol:'34 + 9 = 43.'}],
+  ['i) (4*12-3*13)*(6**2-48/3)',{show:'(4 · 12 − 3 · 13) · (6² − 48 : 3)',sol:'Pierwszy nawias: 48 − 39 = 9. Drugi: 36 − 16 = 20. 9 · 20 = 180.'}]
+ ],{core:6,hint:'Idź po poziomach: nawiasy → potęgi → mnożenie/dzielenie → dodawanie/odejmowanie.'})
+)},
+{title:'Zadanie 17 – słoiki z miodem',steps:F(
+ T(`Dwa słoiki miodu 🍯. W dużym mieści się 2 razy więcej miodu niż w małym.
+  <table class="tb"><tr><th></th><th>mały słoik</th><th>duży słoik</th></tr><tr><td>masa brutto (słoik + miód)</td><td>620 g</td><td>1300 g</td></tr><tr><td>masa netto (sam miód)</td><td>–</td><td>940 g</td></tr></table>
+  <b>Brutto</b> = słoik + zawartość. <b>Netto</b> = tylko zawartość.`),
+ N(`a) O ile cięższy jest duży słój z miodem od małego pełnego miodu? (w g)`,680,{hint:'1300 − 620.',unit:'g'}),
+ N(`Ile waży <b>pusty duży</b> słoik? (brutto − netto)`,360,{hint:'1300 − 940.',unit:'g'}),
+ N(`Ile miodu jest w małym słoiku? (w dużym 940 g, a w małym 2 razy mniej)`,470,{hint:'940 : 2.',unit:'g'}),
+ N(`Ile waży <b>pusty mały</b> słoik?`,150,{hint:'620 − 470.',unit:'g'}),
+ N(`b) O ile lżejszy jest pusty mały słoik od pustego dużego? (w g)`,210,{hint:'360 − 150.',unit:'g',sol:'Pusty duży: 1300 − 940 = 360 g. Miód w małym: 940 : 2 = 470 g. Pusty mały: 620 − 470 = 150 g. Różnica: 360 − 150 = 210 g.'})
+)},
+{title:'Super zagadka – liczba trzycyfrowa',steps:F(
+ T(`Podaj przykład liczby trzycyfrowej, która:<br>• dzieli się przez <b>9</b><br>• ma resztę <b>6</b> z dzielenia przez 10<br>• ma resztę <b>16</b> z dzielenia przez 20.
+  <div class="ex">Wskazówki:<br>• reszta 6 przez 10 → liczba kończy się na <b>6</b><br>• reszta 16 przez 20 → dwie ostatnie cyfry to 16, 36, 56, 76 lub 96<br>• podzielna przez 9 → suma cyfr dzieli się przez 9</div>`),
+ N(`Wpisz swoją liczbę trzycyfrową:`,null,{check:(v)=>{
+   if(!Number.isInteger(v)||v<100||v>999)return 'To musi być liczba trzycyfrowa (od 100 do 999).';
+   if(v%9)return `Nie dzieli się przez 9 (reszta ${v%9}).`;
+   if(v%10!==6)return 'Reszta z dzielenia przez 10 ma być 6 – liczba ma się kończyć na 6.';
+   if(v%20!==16)return `Reszta z dzielenia przez 20 to ${v%20}, a ma być 16.`;
+   return true},hint:'Zacznij od końcówek: 16, 36, 56, 76, 96. Do każdej dopisz cyfrę setek tak, by suma cyfr dzieliła się przez 9. (np. 2_16: 2 + 1 + 6 = 9 ✓)',sol:'Np. 216 (2 + 1 + 6 = 9), 396, 576, 756 lub 936.',okAny:'Wszystkie warunki spełnione! Takich liczb jest kilka: 216, 396, 576, 756, 936.'})
+)}
+]);
+/* ================= ROZDZIAŁ 3 – teoria: ułamki dziesiętne w pamięci ================= */
+ch('Ułamki dziesiętne w pamięci – teoria','s. 14–15','🔟',[
+{title:'Zera na końcu ułamka',steps:F(
+ T(`Ułamki dziesiętne mają fajną cechę: <b>zera na końcu po przecinku nie zmieniają wartości</b>.
+  <div class="ex">0,7 = 0,70 = 0,700<br>1,5060 = 1,506</div>
+  Możesz je dopisać (przyda się przy dodawaniu i odejmowaniu) albo skreślić.`),
+ C(`Które z tych liczb są <b>równe 2,5</b>? (zaznacz wszystkie)`,['2,50','2,05','2,500','25,0'],[0,2],{hint:'Zero na końcu <i>po przecinku</i> nic nie zmienia. Ale zero w środku (2,05) już tak!',ok:'Tak! 2,05 to coś innego (dwie całe i 5 setnych), a 25,0 to dwadzieścia pięć.'}),
+ C(`Czy <b>0,5 = 0,50</b>?`,['Tak – 5 dziesiątych to to samo co 50 setnych','Nie, bo 50 jest większe od 5'],0,{hint:'Zapisz to na ułamkach: 5/10 = 50/100.',ok:'Dokładnie: 5/10 = 50/100.'}),
+ C(`Czy <b>0,05 = 0,5</b>?`,['Nie – 0,05 to 5 setnych, a 0,5 to 5 dziesiątych','Tak, bo cyfry są takie same'],0,{ok:'Pilnuj miejsca przecinka – to klucz do wszystkiego w tym rozdziale!'})
+)},
+{title:'Mnożenie i dzielenie przez 10, 100, 1000…',steps:F(
+ T(`Ułamki dziesiętne łatwo mnożyć i dzielić przez 10, 100, 1000. <b>Przesuwasz przecinek</b>:
+  <div class="ex">• mnożenie → przecinek w <b>prawo</b><br>• dzielenie → przecinek w <b>lewo</b><br>• tyle miejsc, ile zer ma 10, 100, 1000… (10 → 1 miejsce, 100 → 2 miejsca, 1000 → 3 miejsca)</div>
+  Gdy zabraknie cyfr, <b>dopisujesz zera</b>. Pobaw się maszyną poniżej! 👇`),
+ W('comma'),
+ N(`Teraz Ty: <span class="expr">0,207 · 10</span>`,'0.207*10',{hint:'Mnożenie przez 10 → przecinek 1 miejsce w prawo.'}),
+ N(`<span class="expr">6,2 · 100</span>`,'6.2*100',{hint:'Dwa miejsca w prawo – zabraknie cyfr, dopisz zero.',sol:'6,2 → 620 (przecinek przeskakuje o 2 miejsca, dopisujemy zero).'}),
+ N(`<span class="expr">0,0751 · 1000</span>`,'0.0751*1000',{hint:'Trzy miejsca w prawo.'}),
+ N(`<span class="expr">28,19 : 10</span>`,'28.19/10',{hint:'Dzielenie → przecinek w lewo o 1 miejsce.'}),
+ N(`<span class="expr">0,7 : 100</span>`,'0.7/100',{hint:'Dwa miejsca w lewo, brakujące miejsca wypełnij zerami: 0,007.'}),
+ N(`<span class="expr">5,8 : 1000</span>`,'5.8/1000',{hint:'Trzy miejsca w lewo.',sol:'5,8 → 0,0058.'}),
+ C(`Mnożysz przez 100. Co robi przecinek?`,['Przesuwa się o 2 miejsca w prawo','Przesuwa się o 2 miejsca w lewo','Przesuwa się o 100 miejsc w prawo'],0,{ok:'Tak: tyle miejsc, ile zer.'}),
+ T(`<b>Ćwiczenie A.</b> Każdą z liczb pomnóż przez 1000 i podziel przez 100.`),
+ ...[6,8.5,12.9,0.02,0.407,0.0036].flatMap((n,k)=>{
+   const q=M(`Liczba <b>${fmt(n)}</b>:`,[['· 1000',R(n*1000)],[': 100',R(n/100)]],{hint:'· 1000 → przecinek 3 miejsca w prawo. : 100 → 2 miejsca w lewo.',sol:`${fmt(n)} · 1000 = ${fmt(R(n*1000))}, a ${fmt(n)} : 100 = ${fmt(R(n/100))}.`});
+   return k===2?[q,{t:'gate',skip:3}]:[q];
+ })
+)},
+{title:'Dodawanie i odejmowanie w pamięci',steps:F(
+ T(`Dodajemy <b>całości do całości, dziesiąte do dziesiątych, setne do setnych</b>…<br>Pamiętaj: 10 dziesiątych to 1 całość, 10 setnych to 1 dziesiąta.
+  <div class="ex">4,2 + 0,8 = 5 (2 + 8 = 10 dziesiątych = 1 całość)<br>0,51 + 0,3 = 0,51 + 0,30 = 0,81 <span class="pg">(dopisz zero, by miały tyle samo cyfr)</span></div>
+  Odejmowanie działa tak samo:
+  <div class="ex">6 − 0,4 = 5,6 &nbsp; (6 = 5 + 1 = 5 + 10 dziesiątych)<br>5,7 − 0,16 = 5,70 − 0,16 = 5,54</div>`),
+ I([
+  ['a) 4.3+6.7',{sol:'3 + 7 = 10 dziesiątych = 1 całość: 4 + 6 + 1 = 11.'}],
+  ['b) 4.9+0.6',{sol:'9 + 6 = 15 dziesiątych = 1,5, więc 4 + 1,5 = 5,5.'}],
+  ['c) 3.26+17.4',{sol:'3,26 + 17,40: 3 + 17 = 20, 0,26 + 0,40 = 0,66, razem 20,66.'}],
+  ['d) 0.7+5.26',{sol:'0,70 + 5,26 = 5,96.'}],
+  ['e) 7-0.4',{sol:'7 − 1 = 6, a 1 − 0,4 = 0,6, więc 6,6.'}],
+  ['f) 2.49-0.3',{sol:'2,49 − 0,30 = 2,19.'}],
+  ['g) 3.6-0.07',{sol:'3,60 − 0,07 = 3,53.'}],
+  ['h) 6.2-0.3',{sol:'6,2 − 0,3 = 5,9 (62 dziesiątych − 3 dziesiąte = 59).'}]
+ ],{core:5,hint:'Wyrównaj liczbę cyfr po przecinku (dopisz zera) i licz jak na liczbach naturalnych.'}),
+ C(`Jak wygodnie policzyć <b>3,6 − 0,07</b>?`,['3,60 − 0,07 – dopisać zero i odjąć setne','3,6 − 7','3,6 − 0,7'],0,{hint:'0,07 to setne, więc 3,6 też zapisz w setnych.',ok:'Tak: 3,60 − 0,07 = 3,53.'}),
+ NB(`W książce: <i>„Opowiedz, jak wykonujesz rachunki”</i>. Opowiedz komuś (albo sobie), jak liczysz <b>3,26 + 17,4</b>.`)
+)},
+{title:'Mnożenie ułamków dziesiętnych',steps:F(
+ T(`Mnożenie ułamków to <b>mnożenie liczb naturalnych + wstawienie przecinka</b>.
+  <div class="ex">0,3 · 12<br>① Policz 3 · 12 = 36<br>② W 0,3 jest 1 cyfra po przecinku, w 12 – 0. Razem 1.<br>③ Odliczamy od prawej 1 cyfrę: <b>3,6</b></div>
+  <div class="ex">2,01 · 0,03<br>① 201 · 3 = 603<br>② Po przecinku: 2 + 2 = <b>4</b> cyfry<br>③ 603 ma 3 cyfry, więc dopisujemy zero z lewej: <b>0,0603</b></div>`),
+ N(`Ile cyfr po przecinku będzie w wyniku <b>0,4 · 0,15</b>?`,3,{hint:'W 0,4 jest jedna cyfra po przecinku, w 0,15 – dwie.'}),
+ N(`A ile to <b>0,4 · 0,15</b>? (4 · 15 = 60 i odliczamy 3 cyfry)`,0.06,{hint:'60 → 0,060 – zera na końcu można pominąć.',sol:'60 z trzema cyframi po przecinku to 0,060 = 0,06.'}),
+ C(`Skoro <b>0,3 · 0,2</b> to 3 · 2 = 6 z dwoma cyframi po przecinku… ile to?`,['0,06','0,6','6','0,006'],0,{hint:'Dwie cyfry po przecinku: 0,06.',ok:'Tak! Mnożenie dwóch liczb mniejszych od 1 daje <i>mniejszą</i> liczbę – to częsty błąd, że ktoś zapomina o zerze.'}),
+ T(`<b>Ćwiczenie C (mnożenie).</b> Oblicz w pamięci i powiedz, jak liczysz.`),
+ I([
+  ['a) 0.2*0.4',{sol:'2 · 4 = 8, dwie cyfry po przecinku: 0,08.'}],
+  ['b) 0.7*11',{sol:'7 · 11 = 77, jedna cyfra po przecinku: 7,7.'}],
+  ['c) 2.3*0.3',{sol:'23 · 3 = 69, dwie cyfry po przecinku: 0,69.'}],
+  ['d) 0.08*0.007',{sol:'8 · 7 = 56, razem 5 cyfr po przecinku: 0,00056.'}]
+ ],{hint:'Pomnóż bez przecinków. Odlicz tyle cyfr od prawej, ile jest po przecinku w obu liczbach razem.'})
+)},
+{title:'Dzielenie ułamków dziesiętnych',steps:F(
+ T(`Wynik dzielenia <b>nie zmienia się</b>, gdy dzielną i dzielnik pomnożysz przez tę samą liczbę (10, 100, 1000…). Pomnóż tak, żeby <b>dzielnik był liczbą naturalną</b>.
+  <div class="ex">1,2 : 0,3 = 12 : 3 = <b>4</b> &nbsp;(obie ·10)<br>1,55 : 0,5 = 15,5 : 5 = <b>3,1</b><br>0,08 : 1,6 = 8 : 160 = 1/20 = <b>0,05</b> &nbsp;(obie ·100)</div>
+  Możesz też zapisać dzielenie kreską ułamkową: ${FR('0,08','1,6')}`),
+ C(`Przez jaką liczbę pomnożysz dzielną i dzielnik w <b>0,56 : 0,07</b>, żeby dzielnik był naturalny?`,['100','10','1000'],0,{hint:'0,07 ma dwie cyfry po przecinku.',ok:'Tak: 0,56 · 100 = 56, 0,07 · 100 = 7. Czyli 56 : 7.'}),
+ T(`<b>Ćwiczenie C (dzielenie).</b>`),
+ I([
+  ['e) 0.56/0.07',{sol:'Obie ·100: 56 : 7 = 8.'}],
+  ['f) 7.2/0.8',{sol:'Obie ·10: 72 : 8 = 9.'}],
+  ['g) 0.8/0.04',{sol:'Obie ·100: 80 : 4 = 20.'}],
+  ['h) 0.06/0.2',{sol:'Obie ·10: 0,6 : 2 = 0,3.'}]
+ ],{hint:'Pomnóż dzielną i dzielnik przez 10, 100 lub 1000, żeby dzielnik był całkowity.'}),
+ C(`Czy wynik dzielenia <b>0,06 : 0,2</b> jest taki sam jak <b>0,6 : 2</b>?`,['Tak – obie liczby pomnożono przez 10','Nie, bo liczby są inne','Tylko gdy obie są większe od 1'],0,{ok:'Świetnie! To najważniejsza zasada dzielenia ułamków.'})
+)}
+]);
+
+/* ================= ROZDZIAŁ 4 – zadania s.16–17 ================= */
+ch('Zadania z ułamkami dziesiętnymi (1)','s. 16–17','✏️',[
+{title:'Zadanie 1 – mnożenie przez 100, dzielenie przez 1000',steps:F(
+ T(`Zadanie 1. Pamiętasz maszynę do przesuwania przecinka? Mnożenie → w prawo, dzielenie → w lewo.`),
+ I(['0.78*100','160*100','0.02*100','1.4*100','3.456*100','0.0023*100'].map(e=>e),{pre:'a) Pomnóż przez 100: ',hint:'Przecinek 2 miejsca w prawo (dopisz zera, gdy trzeba).'}),
+ I(['840/1000','36/1000','12.5/1000','3.1/1000','0.7/1000','0.15/1000','0.02/1000','0.003/1000'],{core:4,pre:'b) Podziel przez 1000: ',hint:'Przecinek 3 miejsca w lewo (dopisz zera z lewej). Pamiętaj: w liczbie całkowitej przecinek jest na końcu!'})
+)},
+{title:'Zadanie 2 – cztery „maszyny”',steps:F(
+ T(`Liczba <b>12,345</b> przechodzi przez cztery „maszyny” jedna po drugiej: <b>· 10 000</b>, potem <b>: 10</b>, potem <b>: 100 000</b>, na końcu <b>· 1 000 000</b>.`),
+ M(`Wpisz wynik <b>po każdym kroku</b>:`,[['po · 10 000',123450],['po : 10',12345],['po : 100 000',0.12345],['po · 1 000 000',123450]],{hint:'Przesuwaj przecinek: mnożenie → prawo, dzielenie → lewo (tyle miejsc, ile zer).',sol:'12,345 · 10 000 = 123 450; : 10 = 12 345; : 100 000 = 0,12345; · 1 000 000 = 123 450.'}),
+ C(`Jak to policzyć szybko, bez krok po kroku?`,['Zsumować przesunięcia: +4 −1 −5 +6 = +4, czyli 4 miejsca w prawo','Wszystko odjąć','Nie da się szybciej'],0,{hint:'Mnożenie przez 10 000 = +4 miejsca, dzielenie przez 10 = −1 miejsce itd.',ok:'Brawo, to trik dla zaawansowanych! 12,345 przesunięte o 4 miejsca w prawo to 123 450.'})
+)},
+{title:'Zadanie 3 – liczby zasłonięte kleksami',steps:F(
+ T(`Kleksy zasłoniły początek i koniec liczby. Trzeba <b>odwrócić działanie</b>:
+  <div class="ex">Skoro <b>? · 100 = 5470,2</b>, to <b>? = 5470,2 : 100</b><br>Skoro <b>? : 100 = 3,5629</b>, to <b>? = 3,5629 · 100</b></div>`),
+ N(`a) <b>■4,7■ · 100 = 5470,2</b>. Jaka to liczba?`,54.702,{hint:'5470,2 : 100 → przecinek 2 miejsca w lewo.',sol:'5470,2 : 100 = 54,702. Początek zasłonięty to 5, a koniec 02.'}),
+ N(`b) <b>■56,■ : 100 = 3,5629</b>. Jaka to liczba?`,356.29,{hint:'3,5629 · 100 → przecinek 2 miejsca w prawo.',sol:'3,5629 · 100 = 356,29. Kleksy zasłoniły 3 i 29.'})
+)},
+{title:'Zadanie 4 – monety (strona 9)',steps:F(
+ T(`Zadanie 4 odwołuje się do informacji ze <b>strony 9</b> (grubość i masa monet). Tej strony nie mam na zdjęciach, więc zrobisz je w zeszycie z książką pod ręką. 📖`),
+ T(`<b>Jak to ugryźć?</b>
+  <div class="ex">a) Stos o wartości 10 zł z monet jednego nominału: ile monet? <b>10 zł : nominał</b>. Potem: <b>liczba monet · grubość jednej monety</b>.<br>b) Dla każdego worka policz masę monet: <b>liczba monet · masa jednej monety</b>, dodaj masę dwuzłotówki (lub pięciozłotówki) i porównaj.</div>`),
+ NB(`Zrób zadanie 4 w zeszycie. Kiedy skończysz, kliknij „Zrobione”.`,{hint:'Przykład: 10 zł z monet 50-groszowych to 10 : 0,50 = 20 monet. Teraz pomnóż 20 · grubość monety z tabelki.'})
+)},
+{title:'Zadanie 5 – dodawanie i odejmowanie',steps:F(
+ T(`Zadanie 5. Do każdej liczby <b>dodaj</b> albo <b>odejmij</b> podaną liczbę. Jeśli się pomylisz, spróbuję Ci pomóc! 😊`),
+ I(['a) 35+12.2','a) 0.7+12.2','a) 13.52+12.2','b) 34+2.31','b) 54.2+2.31','b) 22.16+2.31','c) 67-12.2','c) 75.3-12.2','c) 30.46-12.2','d) 13-2.31','d) 7.52-2.31','d) 9.484-2.31'],
+  {core:6,hint:'Wyrównaj cyfry po przecinku (dopisz zera) i licz od prawej, jak na liczbach naturalnych.'})
+)},
+{title:'Zadanie 6 – dodawanie w pamięci',steps:F(
+ T(`Zadanie 6. Dodawanie w pamięci. Najprostsze triki: <b>dobij do całości</b> (np. 4,4 + 0,6) albo dodaj osobno całości i część ułamkową.`),
+ I(['a) 4.4+0.6','a) 5.2+3.8','a) 9.9+6.1','a) 8.7+6.3','b) 3.6+0.7','b) 4.8+2.5','b) 3.7+8.4','b) 5.4+9.7','c) 2.18+0.22','c) 3.45+2.05','c) 6.37+2.13','c) 4.51+5.49','d) 7.11+2.8','d) 6.4+0.81','d) 4.55+3.5','d) 3.57+8.5'],
+  {core:8,hint:'Dodaj osobno całości i części ułamkowe. Gdy części ułamkowe dają więcej niż 1, dodaj tę całość.'})
+)},
+{title:'Zadanie 7 – odejmowanie w pamięci',steps:F(
+ T(`Zadanie 7. Odejmowanie w pamięci. Triki: <b>8 − 0,7</b> = 7 + (1 − 0,7) = 7 + 0,3. Albo odejmij po kawałku.`),
+ I(['a) 8-0.7','a) 5-3.2','a) 6-0.42','a) 7-0.53','b) 4.7-0.8','b) 2.5-1.7','b) 8.2-4.5','b) 7.6-2.9','c) 2.83-0.3','c) 6.58-3.5','c) 9.41-2.1','c) 7.39-5.2','d) 3.5-0.42','d) 5.4-1.03','d) 9-2.25','d) 7-3.45'],
+  {core:8,hint:'Dopisz zera po przecinku do tej samej liczby cyfr albo odejmuj po kawałku: najpierw całości, potem ułamek.'})
+)},
+{title:'Zadanie 8 – siatka do siatkówki',steps:F(
+ T(`Zadanie 8 – siatkówka 🏐.<br>Górna krawędź siatki wisi na wysokości:<br>• dla kobiet: <b>2,24 m</b><br>• dla mężczyzn: <b>2,43 m</b>`),
+ N(`a) O ile metrów wyżej zawiesza się siatkę dla mężczyzn niż dla kobiet?`,0.19,{accept:[{a:19,note:'(19 cm = 0,19 m – zgadza się!)'}],unit:'m',hint:'Odejmij: 2,43 − 2,24.',sol:'2,43 − 2,24 = 0,19 m, czyli 19 cm.'}),
+ N(`b) Siatka ma <b>100 cm</b> = 1 m wysokości, a jej górna krawędź (dla mężczyzn) jest na 2,43 m. Na jakiej wysokości jest <b>dolna</b> krawędź? (w metrach)`,1.43,{unit:'m',hint:'2,43 m − 1 m.',sol:'2,43 − 1 = 1,43 m.'}),
+ N(`c) Wyciągnij rękę w górę. Jak wysoko sięgasz? Poproś kogoś o pomiar albo oszacuj (w cm, np. 190).`,null,{free:true,unit:'cm',check:(v,S)=>{
+   if(v<100||v>240)return {retry:'Hmm, wpisz wartość między 100 a 240 cm.'};
+   S.reach=v;return true}}),
+ N(`Ile centymetrów brakuje Ci, żeby sięgnąć górnej krawędzi siatki męskiej (243 cm)?`,(S)=>243-S.reach,{unit:'cm',hint:'243 − (to, ile sięgasz).'})
+)},
+{title:'Zadanie 9 – plac zabaw',steps:F(
+ T(`Plac zabaw ma kształt <b>trójkąta</b>. Jeden bok ma <b>9,4 m</b> i jest o <b>2,6 m dłuższy</b> od każdego z dwóch pozostałych. Ile metrów siatki potrzeba, żeby ogrodzić plac? (Czyli: ile wynosi obwód?)`),
+ N(`Ile metrów ma <b>każdy z krótszych boków</b>?`,6.8,{unit:'m',hint:'Dłuższy bok jest o 2,6 m dłuższy – więc krótszy to 9,4 − 2,6.'}),
+ N(`Ile metrów siatki trzeba kupić? (dodaj wszystkie trzy boki)`,23,{unit:'m',hint:'9,4 + 6,8 + 6,8.',sol:'9,4 + 6,8 + 6,8 = 23 m.'}),
+ C(`Dlaczego dodajemy wszystkie trzy boki?`,['Bo ogrodzenie biegnie dookoła całego placu','Bo tak jest w każdym zadaniu','Bo trzeba policzyć pole'],0,{ok:'Tak, ogrodzenie = obwód. Pole mierzymy w m², a nie w metrach!'})
+)},
+{title:'Zadanie 10 – mnożenie w pamięci',steps:F(
+ T(`Zadanie 10. Mnożenie ułamków w pamięci:<br>① pomnóż bez przecinków,<br>② odlicz od prawej tyle cyfr, ile jest po przecinku <b>w obu liczbach razem</b>.<div class="ex">0,3 · 0,2 → 3 · 2 = 6 → 2 cyfry → <b>0,06</b></div>`),
+ I(['a) 5*0.7','a) 0.2*11','a) 15*0.03','b) 3.8*0.1','b) 0.01*2.76','b) 0.6*0.001','c) 0.3*0.2','c) 0.5*0.4','c) 0.4*1.2','d) 0.3*0.15','d) 0.06*0.8','d) 2.3*0.3'],
+  {core:6,hint:'Pomnóż jak liczby naturalne i odlicz cyfry po przecinku (w obu czynnikach razem).'})
+)},
+{title:'Zadanie 11 – kwadraty i sześciany',steps:F(
+ T(`<b>Kwadrat</b> liczby: 0,6² = 0,6 · 0,6. <b>Sześcian</b> liczby: 0,2³ = 0,2 · 0,2 · 0,2.
+  <div class="ex">0,6² → 6 · 6 = 36 → 2 cyfry po przecinku → <b>0,36</b><br>0,2³ → 2 · 2 · 2 = 8 → 3 cyfry po przecinku → 0,008</div>`),
+ I([
+  ['a) 0.6**2',{show:'0,6²',sol:'6 · 6 = 36, dwie cyfry po przecinku: 0,36.'}],
+  ['a) 0.07**2',{show:'0,07²',sol:'7 · 7 = 49, cztery cyfry po przecinku: 0,0049.'}],
+  ['a) 0.009**2',{show:'0,009²',sol:'9 · 9 = 81, sześć cyfr po przecinku: 0,000081.'}],
+  ['b) 0.2**3',{show:'0,2³',sol:'2 · 2 · 2 = 8, trzy cyfry po przecinku: 0,008.'}],
+  ['b) 0.03**3',{show:'0,03³',sol:'3 · 3 · 3 = 27, sześć cyfr po przecinku: 0,000027.'}],
+  ['b) 0.001**3',{show:'0,001³',sol:'1 · 1 · 1 = 1, dziewięć cyfr po przecinku: 0,000000001.'}]
+ ],{hint:'Policz kwadrat/sześcian bez przecinka, a potem odlicz: (cyfry po przecinku) · (2 lub 3).'}),
+ C(`Ile cyfr po przecinku będzie miało <b>0,05²</b>?`,['4','2','1'],0,{hint:'0,05 ma 2 cyfry po przecinku, a mnożysz dwa razy.',ok:'Tak: 2 · 2 = 4. (0,05² = 0,0025)'})
+)},
+{title:'Zadanie 12 – ilorazy',steps:F(
+ T(`Zadanie 12. Dzielenie ułamków. Pomnóż dzielną i dzielnik przez 10, 100 lub 1000, tak by <b>dzielnik był liczbą naturalną</b>. Kreska ułamkowa też oznacza dzielenie!
+  <div class="ex">${FR('0,75','0,25')} = 0,75 : 0,25 = 75 : 25 = <b>3</b></div>`),
+ I([
+  ['a) 0.8/0.2',{sol:'Obie ·10: 8 : 2 = 4.'}],
+  ['a) 4.2/0.7',{sol:'Obie ·10: 42 : 7 = 6.'}],
+  ['a) 0.24/0.08',{sol:'Obie ·100: 24 : 8 = 3.'}],
+  ['b) 5.4/0.09',{sol:'Obie ·100: 540 : 9 = 60.'}],
+  ['b) 2.6/0.002',{sol:'Obie ·1000: 2600 : 2 = 1300.'}],
+  ['b) 0.48/0.012',{sol:'Obie ·1000: 480 : 12 = 40.'}],
+  ['c) 0.75/0.25',{show:FR('0,75','0,25'),sol:'Obie ·100: 75 : 25 = 3.'}],
+  ['c) 0.6/0.04',{show:FR('0,6','0,04'),sol:'Obie ·100: 60 : 4 = 15.'}],
+  ['c) 2/0.4',{show:FR('2','0,4'),sol:'Obie ·10: 20 : 4 = 5.'}],
+  ['d) 0.72/0.8',{show:FR('0,72','0,8'),sol:'Obie ·10: 7,2 : 8 = 0,9.'}],
+  ['d) 0.069/0.3',{show:FR('0,069','0,3'),sol:'Obie ·10: 0,69 : 3 = 0,23.'}],
+  ['d) 0.432/0.4',{show:FR('0,432','0,4'),sol:'Obie ·10: 4,32 : 4 = 1,08.'}]
+ ],{core:6,hint:'Pomnóż obie liczby przez 10, 100 lub 1000, żeby dzielnik był całkowity.'})
+)}
+]);
+
+/* ================= ROZDZIAŁ 5 – zadania s.18–19 ================= */
+ch('Zadania z ułamkami dziesiętnymi (2)','s. 18–19','🛒',[
+{title:'Zadanie 13 – pary równych liczb',steps:F(
+ T(`Zadanie 13. Dwie ważne zasady:<div class="ex">· 0,1 to to samo co : 10<br>· : 0,1 to to samo co · 10</div>Mnożenie przez 0,001 = dzielenie przez 1000, a dzielenie przez 0,01 = mnożenie przez 100.`),
+ I(['a) 3.2*10','b) 3.2*0.001','c) 3.2*0.1','d) 3.2*100','e) 3.2*0.01','f) 3.2*1000','g) 3.2/10','h) 3.2/0.01','i) 3.2/0.1','j) 3.2/1000','k) 3.2/100','l) 3.2/0.001'],
+  {core:6,pre:'Oblicz: ',hint:'Mnożenie przez 0,1 / 0,01 / 0,001 = dzielenie przez 10 / 100 / 1000. Dzielenie przez 0,1 / 0,01 / 0,001 = mnożenie przez 10 / 100 / 1000.'}),
+ C(`Która liczba jest <b>równa a = 3,2 · 10</b> (czyli 32)?`,['i = 3,2 : 0,1','g = 3,2 : 10','k = 3,2 : 100','h = 3,2 : 0,01'],0,{hint:'Dzielenie przez 0,1 to mnożenie przez 10.',ok:'Tak! a = i = 32.'}),
+ C(`Która liczba jest <b>równa b = 3,2 · 0,001</b>?`,['j = 3,2 : 1000','l = 3,2 : 0,001','e = 3,2 · 0,01','c = 3,2 · 0,1'],0,{hint:'Mnożenie przez 0,001 to to samo co dzielenie przez 1000.',ok:'Tak! b = j = 0,0032.'}),
+ T(`Pary równych liczb: <b>a = i</b> (32), <b>b = j</b> (0,0032), <b>c = g</b> (0,32), <b>d = h</b> (320), <b>e = k</b> (0,032), <b>f = l</b> (3200).`)
+)},
+{title:'Zadanie 14 – który iloraz jest równy 0,372 : 0,24?',steps:F(
+ T(`Wynik dzielenia się nie zmienia, gdy <b>obie</b> liczby pomnożysz (lub podzielisz) przez to samo. Najpierw policzmy, ile to jest:`),
+ N(`<span class="expr">0,372 : 0,24</span> (pomnóż obie liczby przez 100: 37,2 : 24)`,1.55,{hint:'37,2 : 24 = 1,55 (24 · 1,5 = 36, zostaje 1,2; 1,2 : 24 = 0,05).'}),
+ C(`Zaznacz wszystkie ilorazy równe <b>0,372 : 0,24</b>:`,[FR('3,72','2,4'),FR('37,2','0,24'),FR('372','0,024'),FR('0,372','2,4'),FR('37,2','240'),FR('37,2','2,4'),FR('372','2,4'),FR('372','240'),FR('3,72','0,024')],[0,7],{hint:'Sprawdź, czy obie liczby pomnożono przez TO SAMO: 0,372 → 3,72 to ·10, a 0,24 → 2,4 to też ·10. ✓',ok:'Brawo! 3,72 : 2,4 (obie ·10) oraz 372 : 240 (obie ·1000). W pozostałych jedna liczba jest pomnożona inaczej niż druga.'})
+)},
+{title:'Zadanie 15 – porządkowanie liczb',steps:F(
+ T(`Uporządkuj od najmniejszej do największej:<br>${FR('0,0084','0,62')}, ${FR('0,072','0,062')}, ${FR('0,257','6,2')}, ${FR('1,68','62')}<br>
+  Sprytny pomysł: <b>sprowadź wszystkie do dzielenia przez 62</b> (mnożąc dzielną i dzielnik przez tę samą liczbę).
+  <div class="ex">a = 0,0084 : 0,62 → ·100 → 0,84 : 62<br>d = 1,68 : 62 (już jest)</div>`),
+ M(`Przepisz pozostałe tak, by dzielnik był <b>62</b>. Wpisz dzielne:`,[['b: 0,072 : 0,062 → (·1000) → ? : 62',72],['c: 0,257 : 6,2 → (·10) → ? : 62',2.57]],{hint:'0,062 · 1000 = 62, więc 0,072 · 1000 = ?. 6,2 · 10 = 62, więc 0,257 · 10 = ?',sol:'b = 72 : 62, c = 2,57 : 62.'}),
+ C(`Teraz porównaj dzielne (dzielnik jest ten sam – 62): a = 0,84; d = 1,68; c = 2,57; b = 72. Kolejność od najmniejszej:`,['a < d < c < b','a < c < d < b','d < a < c < b','b < c < d < a'],0,{hint:'Im większa dzielna (przy tym samym dzielniku), tym większy iloraz.',ok:'Świetnie! Kolejność: a, d, c, b.'})
+)},
+{title:'Zadanie 16 – jak liczyły Gosia i Marta?',steps:F(
+ T(`Gosia: <b>600 · 0,11 = 0,66 · 100 = 66</b><br>Marta: <b>600 · 0,11 = 6 · 11 = 66</b>`),
+ C(`Co zrobiła <b>Gosia</b>?`,['6 · 0,11 = 0,66, a potem pomnożyła przez 100','600 · 11 = 6600, a potem podzieliła przez 100','600 : 0,11'],0,{hint:'600 = 6 · 100.',ok:'Tak: 600 = 6 · 100.'}),
+ C(`Co zrobiła <b>Marta</b>?`,['600 podzieliła przez 100, a 0,11 pomnożyła przez 100','Dodała 600 i 0,11','600 pomnożyła przez 0,11 na kalkulatorze'],0,{hint:'600 → 6 to dzielenie przez 100, 0,11 → 11 to mnożenie przez 100.',ok:'Tak! Jeden czynnik ÷100, drugi ·100 – iloczyn się nie zmienia.'}),
+ M(`Wymyśl <b>trzeci sposób</b>: 0,11 = 0,1 + 0,01. Policz:`,[['600 · 0,1',60],['600 · 0,01',6],['razem',66]],{hint:'600 · 0,1 to 600 : 10, a 600 · 0,01 to 600 : 100.',sol:'60 + 6 = 66.'})
+)},
+{title:'Zadanie 17 – mnożenie przez setki i tysiące',steps:F(
+ T(`Zadanie 17. Mnóż liczby bez przecinków i zer, a potem popraw wynik:<div class="ex">3,4 · 200 → 34 · 2 = 68, a potem ·100 (200) i :10 (3,4 to 34 dziesiątych) → <b>680</b><br>1200 · 0,03 → 12 · 3 = 36 → 100 · 0,01 się „skraca” → <b>36</b></div>`),
+ I(['a) 3.4*200','b) 50*3.1','c) 2.7*30','d) 1200*0.03','e) 2000*2.3','f) 0.2*210','g) 0.007*400','h) 0.016*3000','i) 600*0.003'],
+  {core:5,hint:'Pomnóż liczby bez przecinków i zer, potem popraw miejsce przecinka. Np. 3,4 · 200 = 34 · 2 · 10 = 680.'})
+)},
+{title:'Zadanie 18 – mnożenie przez 5, 50, 500',steps:F(
+ T(`Ramka w książce podpowiada trik:<div class="ex">Zamiast mnożyć przez 5, pomnóż przez 10 i podziel przez 2.<br>0,26 · 5 = 0,26 · 10 : 2 = 2,6 : 2 = <b>1,3</b><br>4,6 · 50 = 4,6 · 100 : 2 = 460 : 2 = <b>230</b></div>`),
+ I([
+  ['a) 2.4*5',{sol:'2,4 · 10 = 24, 24 : 2 = 12.'}],
+  ['a) 0.56*5',{sol:'0,56 · 10 = 5,6, 5,6 : 2 = 2,8.'}],
+  ['b) 2.8*50',{sol:'2,8 · 100 = 280, 280 : 2 = 140.'}],
+  ['b) 7.2*50',{sol:'7,2 · 100 = 720, 720 : 2 = 360.'}],
+  ['c) 4.3*500',{sol:'4,3 · 1000 = 4300, 4300 : 2 = 2150.'}],
+  ['c) 0.046*500',{sol:'0,046 · 1000 = 46, 46 : 2 = 23.'}]
+ ],{hint:'Pomnóż przez 10, 100 lub 1000 (przesuń przecinek) i podziel przez 2.'}),
+ C(`Dlaczego mnożenie przez 5 to to samo co mnożenie przez 10 i dzielenie przez 2?`,['Bo 5 = 10 : 2','Bo 5 + 5 = 10','Bo to zbieg okoliczności'],0,{ok:'Tak! 5 = 10 : 2, więc ·5 = ·10 : 2. Działa też dla 50 = 100 : 2 i 500 = 1000 : 2.'})
+)},
+{title:'Zadanie 19 – sól do rosołu',steps:F(
+ T(`Do osolenia <b>2 litrów</b> rosołu potrzeba <b>2,8 dag</b> soli (dag = dekagram). Ile dag soli potrzeba do <b>5 litrów</b>?<br>Metoda „najpierw jeden”: policz, ile soli idzie na 1 litr.`),
+ N(`Ile dag soli potrzeba na <b>1 litr</b> rosołu?`,1.4,{unit:'dag',hint:'2,8 : 2.'}),
+ N(`A na <b>5 litrów</b>?`,7,{unit:'dag',hint:'1,4 · 5 = 1,4 · 10 : 2.',sol:'1,4 · 5 = 7 dag.'}),
+ C(`Dlaczego warto najpierw policzyć, ile potrzeba na <b>1 litr</b>?`,['Bo wtedy łatwo policzyć dla dowolnej liczby litrów','Bo tak każą nauczyciele','Bo 1 jest najmniejszą liczbą'],0,{ok:'Dokładnie – to „metoda redukcji do jedności”, przyda się w całej matematyce.'})
+)},
+{title:'Zadanie 20 – wstążka na paczkach',steps:F(
+ T(`Na ozdobienie <b>6 jednakowych paczek</b> zużyto <b>4,8 m</b> wstążki. Ile metrów trzeba dokupić, żeby udekorować <b>kolejne cztery</b> takie paczki?`),
+ N(`Ile metrów wstążki potrzeba na <b>1 paczkę</b>?`,0.8,{unit:'m',hint:'4,8 : 6.'}),
+ N(`Ile metrów wstążki potrzeba na <b>4 paczki</b>?`,3.2,{unit:'m',hint:'0,8 · 4.',sol:'0,8 · 4 = 3,2 m.'})
+)},
+{title:'Zadanie 21 – jajka z ekologicznej hodowli',steps:F(
+ T(`Jajka są w pojemnikach po <b>6, 8 i 10 sztuk</b>. Wszystkie jajka mają tę samą cenę. Najmniejszy pojemnik (6 jajek) kosztuje <b>7,20 zł</b>. Ile kosztują większe?`),
+ N(`Ile kosztuje <b>1 jajko</b>?`,1.2,{unit:'zł',hint:'7,20 : 6.'}),
+ N(`Ile kosztuje pojemnik z <b>8 jajkami</b>?`,9.6,{unit:'zł',hint:'1,20 · 8.'}),
+ N(`Ile kosztuje pojemnik z <b>10 jajkami</b>?`,12,{unit:'zł',hint:'1,20 · 10 – przesuń przecinek.'})
+)},
+{title:'Zadanie 22 – zakupy (szynka, pieczarki, kiełbasa…)',steps:F(
+ T(`Informacje z rysunku:
+  <table class="tb"><tr><th>produkt</th><th>informacja</th></tr>
+  <tr><td>🥩 szynka</td><td>35 zł/kg</td></tr>
+  <tr><td>🍄 pieczarki</td><td>0,5 kg za 5,40 zł</td></tr>
+  <tr><td>🌭 kiełbasa</td><td>22,20 zł/kg</td></tr>
+  <tr><td>🍅 pomidory</td><td>8,20 zł/kg</td></tr>
+  <tr><td>🧀 ser żółty</td><td>0,3 kg za 6,30 zł</td></tr></table>
+  <b>zł/kg</b> znaczy „złotych za 1 kilogram”.`),
+ M(`a) Ile złotych za <b>0,5 kg</b> kiełbasy, a ile za <b>1,5 kg</b>?`,[['0,5 kg',11.1,'zł'],['1,5 kg',33.3,'zł']],{hint:'0,5 kg to połowa kilograma. 1,5 kg = 1 kg + 0,5 kg.',sol:'22,20 : 2 = 11,10 zł. 22,20 + 11,10 = 33,30 zł.'}),
+ N(`b) Ile kosztuje <b>1,5 kg pieczarek</b>? (0,5 kg kosztuje 5,40 zł)`,16.2,{unit:'zł',hint:'1,5 kg to trzy razy 0,5 kg.',sol:'5,40 · 3 = 16,20 zł.'}),
+ N(`c) Ile zapłacisz za <b>0,2 kg szynki</b>? (35 zł/kg)`,7,{unit:'zł',hint:'0,2 kg to 1/5 kilograma: 35 : 5.',sol:'35 · 0,2 = 7 zł.'}),
+ N(`d) Kiełbasa w porcji <b>0,1 kg</b> kosztuje 2,60 zł. Ile kosztuje <b>1 kg</b> kiełbasy pakowanej hermetycznie?`,26,{unit:'zł',hint:'1 kg to 10 porcji po 0,1 kg.'}),
+ N(`O ile więcej kosztuje kilogram kiełbasy hermetycznie pakowanej niż „na wagę” (22,20 zł)?`,3.8,{unit:'zł',hint:'26 − 22,20.'}),
+ N(`e) Ile kosztuje <b>1,5 kg pomidorów</b>? (8,20 zł/kg)`,12.3,{unit:'zł',hint:'8,20 + 4,10 (połowa).',sol:'8,20 + 4,10 = 12,30 zł.'}),
+ N(`Ile reszty dostaniesz z <b>20 zł</b>?`,7.7,{unit:'zł',hint:'20 − 12,30.'}),
+ N(`f) Ile kosztuje <b>1 kg żółtego sera</b>? (0,3 kg kosztuje 6,30 zł)`,21,{unit:'zł',hint:'0,3 kg to 3 dziesiąte kg. 6,30 : 3 = ile kosztuje 0,1 kg. Potem razy 10.',sol:'6,30 : 3 = 2,10 zł za 0,1 kg, więc 1 kg kosztuje 21 zł.'}),
+ N(`g) Za <b>5 pomidorów</b> zapłacono <b>4,10 zł</b>. Ile ważyły? (w kg; 1 kg kosztuje 8,20 zł)`,0.5,{unit:'kg',hint:'1 kg kosztuje 8,20 zł. 4,10 zł to połowa tej kwoty.',sol:'4,10 : 8,20 = 0,5 kg.'})
+)}
+]);
+/* ================= ROZDZIAŁ 6 – s.20 ================= */
+const CODE={0.1:'Ę',0.3:'O',0.5:'I',0.6:'S',0.8:'Z',1.2:'K',1.3:'B',1.5:'Ż',1.8:'Z',2.4:'G',2.5:'Y',3.1:'C',3.4:'L',3.5:'A'};
+const bird=(emoji,exprs,word,hintName)=>{
+  const fields=exprs.map(e=>[disp(e),ev(e)]);
+  const letters=fields.map(f=>CODE[f[1]]||'?').join('');
+  return F(
+   M(`${emoji} Oblicz każde działanie (wpisz liczby w kolejności):`,fields,{hint:'Najpierw nawiasy, potem mnożenie i dzielenie, na końcu dodawanie i odejmowanie.',sol:fields.map(f=>`${f[0]} = ${fmt(f[1])}`).join('<br>')}),
+   X(`Zamień liczby na litery według szyfru: ${fields.map(f=>fmt(f[1])+' → '+(CODE[f[1]]||'?')).join(', ')}.<br>Jak nazywa się ten ptak?`,[word],{hint:`Litery po kolei: ${letters.split('').join(' · ')}`,sol:`To <b>${word.toUpperCase()}</b> (${hintName}).`})
+  );
+};
+ch('Kolejność działań i ptaki','s. 20','🐦',[
+{title:'Zadanie 23 – kolejność działań z ułamkami',steps:F(
+ T(`Kolejność działań jest taka sama jak na liczbach naturalnych: <b>nawiasy → potęgi → mnożenie/dzielenie → dodawanie/odejmowanie</b>. Policz po kawałku i zapisuj wyniki pośrednie!`),
+ I([
+  ['a) 2.52-0.06*7',{sol:'0,06 · 7 = 0,42; 2,52 − 0,42 = 2,1.'}],
+  ['b) 0.96/3-0.2',{sol:'0,96 : 3 = 0,32; 0,32 − 0,2 = 0,12.'}],
+  ['c) 0.28+0.72/0.9',{sol:'0,72 : 0,9 = 0,8; 0,28 + 0,8 = 1,08.'}],
+  ['d) 1.2*300+0.8*50',{sol:'1,2 · 300 = 360; 0,8 · 50 = 40; 360 + 40 = 400.'}],
+  ['e) 1.6/0.4-2.5*0.3',{sol:'1,6 : 0,4 = 4; 2,5 · 0,3 = 0,75; 4 − 0,75 = 3,25.'}],
+  ['f) 8*(0.2*15-2.4)',{sol:'W nawiasie: 0,2 · 15 = 3; 3 − 2,4 = 0,6. Potem 8 · 0,6 = 4,8.'}],
+  ['g) 0.6*(1.3-0.7)+3.6',{sol:'Nawias: 1,3 − 0,7 = 0,6. 0,6 · 0,6 = 0,36. 0,36 + 3,6 = 3,96.'}],
+  ['h) 45.6-2.4/(3.46-3.4)',{sol:'Nawias: 3,46 − 3,4 = 0,06. 2,4 : 0,06 = 40. 45,6 − 40 = 5,6.'}]
+ ],{core:5,hint:'Najpierw nawiasy, potem mnożenie i dzielenie (od lewej), na końcu dodawanie i odejmowanie.'})
+)},
+{title:'Zadanie 24 – ułamki z kreską ułamkową',steps:F(
+ T(`Kreska ułamkowa to <b>dzielenie</b>, a licznik i mianownik traktujemy jak <b>nawiasy</b>:
+  <div class="ex">${FR('13 − 1','2 + 4')} = (13 − 1) : (2 + 4) = 12 : 6 = <b>2</b></div>
+  Najpierw policz licznik, potem mianownik, a na końcu podziel.`),
+ I([
+  ['a) (13-1)/(2+4)',{show:FR('13 − 1','2 + 4'),sol:'12 : 6 = 2.'}],
+  ['b) (1.2-0.9)/(0.7+0.8)',{show:FR('1,2 − 0,9','0,7 + 0,8'),sol:'Licznik: 0,3. Mianownik: 1,5. 0,3 : 1,5 = 3 : 15 = 0,2.'}],
+  ['c) (7.1-0.8)/(5*0.6)',{show:FR('7,1 − 0,8','5 · 0,6'),sol:'Licznik: 6,3. Mianownik: 3. 6,3 : 3 = 2,1.'}],
+  ['d) (6.53-6.32)/(2.3-1.6)',{show:FR('6,53 − 6,32','2,3 − 1,6'),sol:'Licznik: 0,21. Mianownik: 0,7. 0,21 : 0,7 = 2,1 : 7 = 0,3.'}],
+  ['e) 2*5/(1.6+0.9)',{show:'2 · '+FR('5','1,6 + 0,9'),sol:'Mianownik: 2,5. 5 : 2,5 = 2. Potem 2 · 2 = 4.'}],
+  ['f) 0.6*7/0.2*(1/(2.2+0.8))',{show:FR('0,6 · 7','0,2')+' · '+FR('1','2,2 + 0,8'),sol:'Pierwszy ułamek: 4,2 : 0,2 = 21. Drugi: 1 : 3. 21 · 1/3 = 7.'}]
+ ],{hint:'Policz licznik, policz mianownik, potem podziel. Dzielnik zamień na całkowity (·10, ·100).'})
+)},
+{title:'Zadanie 25 – odszyfruj nazwy ptaków',steps:F(
+ T(`Zadanie 25 – detektyw matematyczny! 🕵️ Każdy wynik to <b>litera</b>. Szyfr:
+  <table class="tb"><tr><td>0,1 Ę</td><td>0,3 O</td><td>0,5 I</td><td>0,6 S</td><td>0,8 Z</td></tr>
+  <tr><td>1,2 K</td><td>1,3 B</td><td>1,5 Ż</td><td>1,8 Z</td><td>2,4 G</td></tr>
+  <tr><td>2,5 Y</td><td>3,1 C</td><td>3,4 L</td><td>3,5 A</td><td></td></tr></table>
+  Rozwiązujemy po jednym ptaku. Wyniki wpisujesz po kolei, a potem odgadujesz nazwę.`),
+ T(`<b>Ptak 1</b> – żółto-zielony ptaszek na gałązce (w książce: pierwsze zdjęcie po lewej u góry). Działania: <b>1,2·3−0,5 / 5−6·0,7 / 7−9:2 / 0,5·(1,8+1,2)</b>`),
+ bird('🐤',['1.2*3-0.5','5-6*0.7','7-9/2','0.5*(1.8+1.2)'],'czyż','mały ptak z rodziny zięb'),
+ T(`<b>Ptak 2</b> – czerwonopierśny ptak (zdjęcie po prawej u góry). Działania: <b>0,3·6+3·0,2 / (1,2+1,3):5 / 3,6:0,9−0,6</b>`),
+ bird('🐦',['0.3*6+3*0.2','(1.2+1.3)/5','3.6/0.9-0.6'],'gil','ptak z czerwonym brzuszkiem'),
+ T(`<b>Ptak 3</b> – ptak z pomarańczowym brzuchem (zdjęcie po lewej na dole). Działania: <b>1,6:(3,3−1,3) / 1,5·2:6 / (1−0,8)·(2−1,5) / 5,3−2,4:0,6 / 4,8−2,6:2</b>`),
+ bird('🪶',['1.6/(3.3-1.3)','1.5*2/6','(1-0.8)*(2-1.5)','5.3-2.4/0.6','4.8-2.6/2'],'zięba','ptak z rodziny zięb'),
+ T(`<b>Ptak 4</b> – czarny ptak z żółtym dziobem (zdjęcie na dole w środku). Działania: <b>(0,2+0,4)·(1,2+0,8) / 3:2−2·0,6 / 4,2:(2,7+4,3)</b>`),
+ bird('🐦‍⬛',['(0.2+0.4)*(1.2+0.8)','3/2-2*0.6','4.2/(2.7+4.3)'],'kos','czarny ptak śpiewający')
+)},
+{title:'Super zagadka – trzy liczby',steps:F(
+ T(`O trzech liczbach wiadomo: <b>druga jest 2 razy większa od pierwszej</b>, <b>trzecia 2 razy większa od drugiej</b>, a ich <b>suma to 2,1</b>. Jakie to liczby?
+  <div class="ex">Oznaczmy pierwszą liczbę jako <b>x</b> (jedna „porcja”).<br>Druga = 2 porcje, trzecia = 2 · 2 = 4 porcje.</div>`),
+ N(`Ile „porcji” jest razem? (1 + 2 + 4)`,7,{hint:'1 + 2 + 4.'}),
+ N(`Ile wynosi <b>jedna porcja</b> (pierwsza liczba)? 7 porcji = 2,1`,0.3,{hint:'2,1 : 7 = 21 : 70.',sol:'2,1 : 7 = 0,3.'}),
+ M(`Wpisz wszystkie trzy liczby:`,[['pierwsza',0.3],['druga',0.6],['trzecia',1.2]],{hint:'Druga = 2 · 0,3, trzecia = 2 · druga.',sol:'0,3; 0,6; 1,2. Suma: 0,3 + 0,6 + 1,2 = 2,1 ✓'})
+)}
+]);
+
+/* ================= ROZDZIAŁ 7 – s.21–23 ================= */
+ch('Działania pisemne na ułamkach dziesiętnych','s. 21–23','📝',[
+{title:'Teoria: dodawanie i odejmowanie pisemne',steps:F(
+ T(`Przypomnijmy działania <b>sposobem pisemnym</b>. Przy dodawaniu i odejmowaniu <b>przecinek zapisujemy pod przecinkiem</b>: jedności pod jednościami, części dziesiąte pod dziesiątymi itd. Brakujące cyfry uzupełnij zerami.
+  <pre class="col">  37,20
++  6,73
+-------
+  43,93</pre>
+  <pre class="col">  28,200
+−  6,273
+-------
+  21,927</pre>`),
+ C(`Co musi stać <b>pod sobą</b>, gdy dodajemy lub odejmujemy ułamki pisemnie?`,['Przecinek pod przecinkiem','Ostatnie cyfry pod sobą','Pierwsze cyfry pod sobą'],0,{hint:'Chodzi o to, żeby jedności były pod jednościami, dziesiąte pod dziesiątymi…',ok:'Tak! Najczęstszy błąd to wyrównanie „od prawej” zamiast po przecinku.'}),
+ N(`Policz pisemnie: <span class="expr">37,20 + 6,73</span>`,43.93,{hint:'0 + 3 = 3, 2 + 7 = 9, 7 + 6 = 13 → zapisz 3 i przenieś 1.'}),
+ N(`<span class="expr">5,724 + 0,910 + 16,800</span>`,23.434,{hint:'Przecinki równo pod sobą, każda liczba ma 3 cyfry po przecinku.'}),
+ N(`<span class="expr">2,571 − 1,790</span>`,0.781,{hint:'Odejmuj od prawej: 1 − 0 = 1, 7 − 9 nie da się – pożycz!'}),
+ N(`<span class="expr">28,2 − 6,273</span> (dopisz zera: 28,200)`,21.927,{hint:'28,200 − 6,273.'})
+)},
+{title:'Teoria: mnożenie i dzielenie pisemne',steps:F(
+ T(`<b>Mnożenie pisemne.</b> Mnożymy jak liczby naturalne (zapominamy o przecinkach), a w wyniku oddzielamy przecinkiem tyle cyfr od prawej, ile było po przecinku <b>w obu czynnikach razem</b>.
+  <pre class="col">  0,715   ← 3 miejsca
+×  4,06   ← 2 miejsca
+-------
+   4290
++ 2860
+-------
+ 2,90290   ← 5 miejsc</pre>`),
+ N(`Ile wynosi <b>715 · 406</b> (bez przecinków)?`,290290,{hint:'715 · 400 = 286 000, 715 · 6 = 4290.',sol:'286 000 + 4290 = 290 290.'}),
+ N(`Ile cyfr po przecinku będzie w wyniku <b>0,715 · 4,06</b>?`,5,{hint:'3 + 2.'}),
+ N(`Więc ile to <b>0,715 · 4,06</b>?`,2.9029,{hint:'290290 z 5 miejscami po przecinku: 2,90290. Końcowe zero można pominąć.',sol:'2,90290 = 2,9029.'}),
+ T(`<b>Dzielenie pisemne.</b> Najpierw pomnóż dzielną i dzielnik przez 10, 100, 1000…, żeby <b>dzielnik był naturalny</b>. Potem dziel jak na liczbach naturalnych, a przecinek w wyniku wstaw nad przecinkiem dzielnej.
+  <div class="ex">0,266 : 0,07 = 26,6 : 7 = <b>3,8</b> &nbsp;(obie ·100)<br>26,6 : 7 → 26 : 7 = 3 reszta 5, przecinek, 56 : 7 = 8</div>`),
+ C(`Przez jaką liczbę pomnożono 0,266 i 0,07, żeby dostać 26,6 : 7?`,['100','10','1000'],0,{hint:'0,07 → 7 to ·100.',ok:'Tak: 0,266 · 100 = 26,6 i 0,07 · 100 = 7.'}),
+ N(`Policz <span class="expr">26,6 : 7</span>`,3.8,{hint:'7 · 3 = 21, 26 − 21 = 5. Przecinek. 56 : 7 = 8.'}),
+ C(`Gdzie stawiasz przecinek w wyniku dzielenia pisemnego?`,['Gdy „zjedziesz” cyfrą po przecinku dzielnej','Na samym końcu wyniku','Zawsze po pierwszej cyfrze'],0,{ok:'Tak: przecinek w wyniku pojawia się dokładnie wtedy, gdy zaczynasz „znosić” cyfry po przecinku dzielnej.'})
+)},
+{title:'Zadanie 1 – dodawanie, odejmowanie, kilka działań',steps:F(
+ T(`Zadanie 1 (s. 22). Oblicz w pamięci lub pisemnie. Możesz zapisać działanie w zeszycie – przecinek pod przecinkiem!`),
+ I([
+  ['a) 4.72+5.28',{sol:'72 setnych + 28 setnych = 100 setnych = 1 całość, więc 4 + 5 + 1 = 10.'}],
+  ['a) 6.27+0.97',{sol:'6,27 + 1 − 0,03 = 7,24 (0,97 = 1 − 0,03).'}],
+  ['a) 18.3+3.81',{sol:'18,30 + 3,81 = 22,11.'}],
+  ['b) 14.3-3.14',{sol:'14,30 − 3,14 = 11,16.'}],
+  ['b) 0.925-0.84',{sol:'0,925 − 0,840 = 0,085.'}],
+  ['b) 2.33-0.567',{sol:'2,330 − 0,567 = 1,763.'}],
+  ['c) 44-4.4+0.44',{sol:'44 − 4,4 = 39,6; 39,6 + 0,44 = 40,04.'}],
+  ['c) 7.6+0.76+1.74',{sol:'7,6 + 0,76 = 8,36; 8,36 + 1,74 = 10,1.'}],
+  ['c) 6.4-5.48+7.03',{sol:'6,4 − 5,48 = 0,92; 0,92 + 7,03 = 7,95.'}]
+ ],{core:6,hint:'Wyrównaj przecinki (dopisz zera) i licz od prawej. Przy kilku działaniach liczymy od lewej do prawej.'})
+)},
+{title:'Zadanie 2 – plan skansenu',steps:F(
+ T(`Zadanie 2 – plan skansenu 🏘️. Na mapie w książce: <b>A</b> – kuźnia, <b>B</b> – warsztat bednarza, <b>C</b> – wiatrak, <b>D</b> – warsztat garncarza, <b>E</b> – kościół. Przy drogach są podane długości w km.<br>Weź książkę i patrz na mapę razem ze mną. 👀`),
+ T(`<b>a)</b> Która droga od <b>kuźni (A) do wiatraka (C)</b> jest dłuższa: tylko obok warsztatu bednarza (B) czy tylko obok warsztatu garncarza (D)?<br>Musisz dodać odcinki każdej drogi:<div class="ex">• przez B: A → B, potem B → C<br>• przez D: A → wejście/wyjście → D, potem D → C</div>`),
+ M(`Dodaj odcinki z mapy (w km):`,[['przez B: 1,08 + 1,26',2.34,'km'],['przez D: 0,42 + 0,77 + 1,15',2.34,'km']],{hint:'1,08 + 1,26: 8 + 6 = 14, więc 1,08 + 1,26 = 2,34. Drugi: 0,42 + 0,77 = 1,19, potem + 1,15.',sol:'1,08 + 1,26 = 2,34 km. 0,42 + 0,77 + 1,15 = 2,34 km. Obie drogi są tak samo długie! (Jeśli na Twojej mapie odcinki są inne, sprawdź jeszcze raz.)'}),
+ C(`Która droga jest dłuższa?`,['Żadna – są tak samo długie','Przez bednarza','Przez garncarza'],0,{ok:'Zaskoczenie, prawda? Czasem odpowiedź to „są równe”.'}),
+ T(`<b>b)</b> Zwiedzasz <b>wszystkie obiekty A–E</b>. Zakładamy: <b>1 km = kwadrans</b> (15 minut) marszu, a każdy obiekt oglądasz <b>10 minut</b>. Zaplanuj trasę i policz czas.<br>Przykładowa trasa: wejście → A → B → E → C → D → wyjście.`),
+ N(`Oblicz długość trasy: 0,42 + 1,08 + 0,68 + 0,55 + 1,15 + 0,77 = ? km`,4.65,{unit:'km',hint:'Dodawaj po kolei: 0,42 + 1,08 = 1,5; potem + 0,68 …',sol:'0,42 + 1,08 = 1,50; + 0,68 = 2,18; + 0,55 = 2,73; + 1,15 = 3,88; + 0,77 = 4,65 km.'}),
+ N(`Ile minut zajmie samo <b>chodzenie</b>? (4,65 km · 15 min)`,69.75,{unit:'min',hint:'4,65 · 15 = 4,65 · 10 + 4,65 · 5 = 46,5 + 23,25.'}),
+ N(`Ile minut zajmie <b>oglądanie</b> pięciu obiektów po 10 minut?`,50,{unit:'min',hint:'5 · 10.'}),
+ N(`Ile minut łącznie?`,119.75,{unit:'min',hint:'69,75 + 50.',sol:'69,75 + 50 = 119,75 min, czyli prawie 2 godziny.'}),
+ NB(`Zadanie dla odważnych: wymyśl <b>krótszą trasę</b> i policz jej czas! Zapisz w zeszycie.`,{hint:'Staraj się nie wracać tą samą drogą i omijać najdłuższe odcinki (1,32 km, 1,26 km).'})
+)},
+{title:'Zadanie 3 – mnożenie, potęgi i dzielenie',steps:F(
+ T(`Zadanie 3 (s. 22). Pisemnie lub w pamięci. Pamiętaj: <b>mnożenie → liczba cyfr po przecinku w obu czynnikach</b>, <b>potęga = mnożenie tej samej liczby</b>, <b>dzielenie → najpierw dzielnik naturalny</b>.`),
+ I([
+  ['a) 3.4*0.13',{sol:'34 · 13 = 442, trzy cyfry po przecinku: 0,442.'}],
+  ['b) 0.865*0.4',{sol:'865 · 4 = 3460, cztery cyfry po przecinku: 0,3460 = 0,346.'}],
+  ['c) 0.95*2.6',{sol:'95 · 26 = 2470, trzy cyfry po przecinku: 2,470 = 2,47.'}],
+  ['d) 2.08*3.05',{sol:'208 · 305 = 63 440, cztery cyfry po przecinku: 6,3440 = 6,344.'}],
+  ['e) 4.3**2',{show:'4,3²',sol:'43 · 43 = 1849, dwie cyfry po przecinku: 18,49.'}],
+  ['f) 0.27**2',{show:'0,27²',sol:'27 · 27 = 729, cztery cyfry po przecinku: 0,0729.'}],
+  ['g) 0.9**3',{show:'0,9³',sol:'9 · 9 · 9 = 729, trzy cyfry po przecinku: 0,729.'}],
+  ['h) 2.1**3',{show:'2,1³',sol:'21 · 21 · 21 = 9261, trzy cyfry po przecinku: 9,261.'}],
+  ['i) 5.64/0.8',{sol:'Obie ·10: 56,4 : 8 = 7,05.'}],
+  ['j) 0.217/3.5',{sol:'Obie ·10: 2,17 : 35 = 0,062.'}],
+  ['k) 0.9/0.036',{sol:'Obie ·1000: 900 : 36 = 25.'}],
+  ['l) 0.00324/0.45',{sol:'Obie ·100: 0,324 : 45 = 0,0072.'}]
+ ],{core:6,hint:'Mnożenie: pomnóż bez przecinków, odlicz cyfry. Dzielenie: pomnóż obie liczby przez 10/100/1000, aż dzielnik będzie całkowity.'})
+)},
+{title:'Zadanie 4 – średnia arytmetyczna',steps:F(
+ T(`<b>Średnia arytmetyczna</b> to „sprawiedliwy podział”: <b>dodaj wszystkie liczby i podziel przez ich liczbę</b>.
+  <div class="ex">Średnia z a i b = (a + b) : 2<br>Średnia z a, b i c = (a + b + c) : 3</div>`),
+ C(`Średnia z <b>pięciu</b> liczb – przez ile dzielimy sumę?`,['Przez 5','Przez 4','Przez 2'],0,{hint:'Tyle, ile jest liczb.',ok:'Tak: tyle, ile jest liczb.'}),
+ I([
+  ['a) (1.2+3.68)/2',{show:'średnia z 1,2 i 3,68',sol:'Suma: 4,88. Dzielimy przez 2: 2,44.'}],
+  ['b) (0.7+1.5+8)/3',{show:'średnia z 0,7; 1,5 i 8',sol:'Suma: 10,2. Dzielimy przez 3: 3,4.'}],
+  ['c) (0.25+1.03+0.68+0.72)/4',{show:'średnia z 0,25; 1,03; 0,68 i 0,72',sol:'Suma: 2,68. Dzielimy przez 4: 0,67.'}],
+  ['d) (3.2+2.64+2.05+3.5+3)/5',{show:'średnia z 3,2; 2,64; 2,05; 3,5 i 3',sol:'Suma: 14,39. Dzielimy przez 5: 2,878.'}]
+ ],{pre:'Oblicz: ',hint:'Dodaj wszystkie liczby, potem podziel sumę przez ich liczbę.'}),
+ C(`Średnia z dwóch liczb 4 i 10 to 7. Co to znaczy?`,['7 leży dokładnie pośrodku między 4 a 10','7 to suma tych liczb','7 jest większa od obu liczb'],0,{ok:'Tak, średnia z dwóch liczb leży dokładnie pośrodku.'})
+)},
+{title:'Zadanie 5 – gruszki, ananas i jabłka',steps:F(
+ T(`<b>a)</b> Leszek kupił <b>0,75 kg gruszek po 6,40 zł</b> za 1 kg i <b>ananasa</b>. Dał kasjerce <b>25 zł</b> i dostał <b>8,75 zł</b> reszty. Ile kosztował ananas?<br>Rozbijemy na kroki.`),
+ N(`Ile zapłacił <b>za gruszki</b>? (0,75 · 6,40)`,4.8,{unit:'zł',hint:'0,75 kg to 3/4 kg: 6,40 : 4 = 1,60, razy 3.',sol:'6,40 · 0,75 = 4,80 zł.'}),
+ N(`Ile <b>w sumie</b> Leszek wydał na zakupy? (dał 25 zł, dostał 8,75 zł reszty)`,16.25,{unit:'zł',hint:'25 − 8,75.'}),
+ N(`Ile kosztował <b>ananas</b>?`,11.45,{unit:'zł',hint:'Wydał razem 16,25 zł, w tym 4,80 zł za gruszki.',sol:'16,25 − 4,80 = 11,45 zł.'}),
+ T(`<b>b)</b> Olek zapłacił <b>5,75 zł</b> za <b>2,5 kg</b> jabłek. Iza kupiła <b>3,2 kg</b> innych jabłek i zapłaciła <b>7,20 zł</b>. Które jabłka miały wyższą cenę za 1 kg?`),
+ N(`Ile kosztuje <b>1 kg jabłek Olka</b>? (5,75 : 2,5)`,2.3,{unit:'zł',hint:'Pomnóż obie liczby przez 10: 57,5 : 25.',sol:'57,5 : 25 = 2,3 zł/kg.'}),
+ N(`Ile kosztuje <b>1 kg jabłek Izy</b>? (7,20 : 3,2)`,2.25,{unit:'zł',hint:'Pomnóż obie liczby przez 10: 72 : 32.',sol:'72 : 32 = 2,25 zł/kg.'}),
+ C(`Czyje jabłka miały wyższą cenę za 1 kg?`,['Olka (2,30 zł > 2,25 zł)','Izy','Taka sama'],0,{ok:'Tak! Porównujemy ceny za 1 kg, nie same kwoty do zapłaty.'})
+)},
+{title:'Zadanie 6 – ceny paliw',steps:F(
+ T(`Na stacji zatankowano trzy rodzaje paliwa: <b>olej napędowy</b>, <b>benzynę 98</b> i <b>benzynę 95</b>. Najdroższa jest benzyna 98, a najtańsza – benzyna 95. Ile kosztuje litr oleju napędowego?<br>Na dystrybutorach z rysunku:<br>1) 165,00 zł za 30 l<br>2) 119,72 zł za 20,5 l<br>3) 258,75 zł za 45 l<br>Policzmy cenę jednego litra z każdego.`),
+ N(`Dystrybutor 1: cena za 1 litr? (165 : 30)`,5.5,{unit:'zł/l',hint:'165 : 30 = 16,5 : 3.'}),
+ N(`Dystrybutor 2: cena za 1 litr? (119,72 : 20,5)`,5.84,{unit:'zł/l',hint:'Pomnóż obie liczby przez 10: 1197,2 : 205.',sol:'1197,2 : 205 = 5,84 zł/l.'}),
+ N(`Dystrybutor 3: cena za 1 litr? (258,75 : 45)`,5.75,{unit:'zł/l',hint:'25875 : 4500 = 258,75 : 45.',sol:'258,75 : 45 = 5,75 zł/l.'}),
+ C(`Ile kosztuje litr <b>oleju napędowego</b>? (najdroższa 98, najtańsza 95)`,['5,75 zł (środkowa cena)','5,50 zł','5,84 zł'],0,{hint:'Ceny: 5,50; 5,75; 5,84. Olej nie jest ani najtańszy, ani najdroższy.',ok:'Dokładnie: 95 → 5,50; 98 → 5,84; olej → 5,75.'})
+)},
+{title:'Zadanie 7 – pan Rafał jeździ do pracy',steps:F(
+ T(`Pan Rafał pracuje <b>15 km</b> od domu. Auto spala <b>6,5 l paliwa na 100 km</b>. Litr benzyny kosztuje <b>5,60 zł</b>. W maju było <b>20 dni roboczych</b>. Ile w maju kosztowało go jeżdżenie do pracy?<br>Uwaga: codziennie jedzie <b>tam i z powrotem</b>!`),
+ N(`Ile km przejeżdża <b>w ciągu jednego dnia</b> (tam i z powrotem)?`,30,{unit:'km',hint:'15 · 2.'}),
+ N(`Ile km w <b>całym maju</b> (20 dni)?`,600,{unit:'km',hint:'30 · 20.'}),
+ N(`Ile litrów paliwa spali na 600 km? (6,5 l na każde 100 km)`,39,{unit:'l',hint:'600 km to 6 razy 100 km: 6,5 · 6.',sol:'6,5 · 6 = 39 l.'}),
+ N(`Ile zapłaci za to paliwo? (39 l · 5,60 zł)`,218.4,{unit:'zł',hint:'39 · 5,60 = 39 · 5 + 39 · 0,6 = 195 + 23,4.',sol:'39 · 5,60 = 218,40 zł.'})
+)},
+{title:'Zadanie 8 – woda w produktach',steps:F(
+ T(`Tabela: jaka część masy to woda?
+  <table class="tb"><tr><th>produkt</th><th>część wody</th></tr><tr><td>pomidor</td><td>0,93</td></tr><tr><td>ogórek</td><td>0,95</td></tr><tr><td>cebula</td><td>0,86</td></tr><tr><td>orzech laskowy</td><td>0,05</td></tr><tr><td>jajko na twardo</td><td>0,72</td></tr></table>
+  Np. w 1 kg ogórków jest 0,95 kg wody. Aby policzyć wodę w <b>m</b> kg, mnożymy: <b>m · część wody</b>.`),
+ N(`a) Ile kg wody jest w <b>2 kg ogórków</b>?`,1.9,{unit:'kg',hint:'2 · 0,95.'}),
+ N(`b) Ile kg wody jest w pomidorze ważącym <b>0,2 kg</b>?`,0.186,{unit:'kg',hint:'0,2 · 0,93 → 2 · 93 = 186, trzy cyfry po przecinku.'}),
+ N(`Ile kg wody jest w <b>3 kg orzechów laskowych</b>?`,0.15,{unit:'kg',hint:'3 · 0,05.'}),
+ C(`Gdzie jest więcej wody?`,['W pomidorze 0,2 kg (0,186 kg)','W 3 kg orzechów (0,15 kg)','Tyle samo'],0,{ok:'Tak! Mały pomidor ma więcej wody niż 3 kg orzechów. 🍅'}),
+ T(`<b>c)</b> Pani Jola zrobiła sałatkę z <b>1 kg pomidorów</b>, <b>0,4 kg ogórków</b>, <b>0,1 kg cebuli</b> i <b>2 jajek na twardo</b>, które ważyły razem <b>0,2 kg</b>. Czy woda stanowi więcej czy mniej niż <b>0,9</b> masy sałatki?`),
+ M(`Policz, ile kg wody jest w każdym składniku:`,[['pomidory 1 · 0,93',0.93],['ogórki 0,4 · 0,95',0.38],['cebula 0,1 · 0,86',0.086],['jajka 0,2 · 0,72',0.144]],{hint:'Mnóż masę przez część wody: np. 0,4 · 0,95 = 4 · 95 = 380 → 0,380.',sol:'0,93; 0,38; 0,086; 0,144.'}),
+ N(`Ile kg wody jest <b>razem</b>?`,1.54,{unit:'kg',hint:'0,93 + 0,38 + 0,086 + 0,144.'}),
+ N(`Ile waży <b>cała sałatka</b>? (1 + 0,4 + 0,1 + 0,2)`,1.7,{unit:'kg'}),
+ N(`Ile wody byłoby w sałatce, gdyby stanowiła dokładnie 0,9 masy? (0,9 · 1,7)`,1.53,{unit:'kg',hint:'9 · 17 = 153, dwie cyfry po przecinku.'}),
+ C(`Czy woda stanowi więcej, czy mniej niż 0,9 masy sałatki?`,['Więcej – 1,54 kg > 1,53 kg','Mniej','Dokładnie 0,9'],0,{hint:'Porównaj 1,54 kg wody z 1,53 kg (to jest 0,9 całej masy).',ok:'Brawo! Zadanie z gwiazdką zaliczone. ⭐'})
+)},
+{title:'Super zagadka – koszykarze',steps:F(
+ T(`Średni wzrost zawodników pięcioosobowej drużyny koszykarskiej wynosił <b>1,95 m</b>. O ile zwiększyłaby się ta średnia, gdyby zamiast Graczyka o wzroście <b>1,97 m</b> na boisko wszedł Drągalski, który ma <b>2,12 m</b>?`),
+ N(`O ile centymetrów (albo metrów) Drągalski jest wyższy od Graczyka? (w metrach)`,0.15,{unit:'m',hint:'2,12 − 1,97.'}),
+ N(`O tyle zwiększy się <b>suma wzrostów</b> wszystkich pięciu zawodników. A o ile zwiększy się <b>średnia</b>? (podziel przez 5, w metrach)`,0.03,{unit:'m',accept:[{a:3,note:'(3 cm = 0,03 m – zgadza się!)'}],hint:'0,15 : 5 = 15 : 500.',sol:'Suma rośnie o 0,15 m, a średnia o 0,15 : 5 = 0,03 m, czyli 3 cm.'}),
+ C(`Dlaczego średnia rośnie tylko o 0,03 m, a nie o całe 0,15 m?`,['Bo ten przyrost „rozkłada się” po równo na wszystkich 5 zawodników','Bo Drągalski jest za niski','Bo średnia zawsze rośnie o 3 cm'],0,{ok:'Świetnie – to właśnie sens średniej: dzielimy po równo między wszystkich.'})
+)}
+]);
+/* ====== silnik korepetytora ====== */
+const $=(s,r=document)=>r.querySelector(s);
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const PRAISE=['Brawo! 🎉','Dokładnie! ✅','Tak jest! 💪','Świetnie! ⭐','Super! 👏','Pięknie! 🌟','Zgadza się! 🙌'];
+const KEY='sowa-liczba-v1';
+let store={name:'',prog:{}};
+try{const s=localStorage.getItem(KEY);if(s)store=Object.assign(store,JSON.parse(s))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+const chat=$('#chat'),dock=$('#dock'),side=$('#side');
+let cur=null;
+
+/* --- wiadomości --- */
+const subst=h=>String(h).replace(/\{name\}/g,store.name||'');
+function scrollDown(){requestAnimationFrame(()=>{chat.scrollTop=chat.scrollHeight})}
+function say(h,cls=''){
+  const m=el('div','msg '+cls);
+  m.innerHTML='<div class="av">🦉</div><div class="bub">'+subst(h)+'</div>';
+  chat.appendChild(m);scrollDown();return m;
+}
+function me(h){const m=el('div','msg me');m.innerHTML='<div class="bub">'+h+'</div>';chat.appendChild(m);scrollDown()}
+function setDock(...nodes){
+  dock.innerHTML='';nodes.filter(Boolean).forEach(n=>dock.appendChild(n));
+  const f=dock.querySelector('input,button.primary,button');
+  if(f&&!/Mobi|Android/i.test(navigator.userAgent))f.focus();
+}
+const btn=(t,c,f)=>{const b=el('button','btn '+(c||''),t);b.type='button';if(f)b.onclick=f;return b};
+const flash=e=>{e.classList.remove('shake');void e.offsetWidth;e.classList.add('shake')};
+
+/* --- pasek boczny --- */
+const taskKey=(ci,ti)=>ci+'-'+ti;
+function totalStars(){return Object.values(store.prog).reduce((a,p)=>a+p.stars,0)}
+function buildSide(){
+  side.innerHTML='';
+  CH.forEach((c,ci)=>{
+    const d=el('details');
+    if(cur?cur.ci===ci:ci===0)d.open=true;
+    const done=c.tasks.filter((_,ti)=>store.prog[taskKey(ci,ti)]).length;
+    d.appendChild(el('summary','',`${c.icon} ${ci+1}. ${c.title}<small>${c.pages} · ${done}/${c.tasks.length} zadań</small>`));
+    c.tasks.forEach((t,ti)=>{
+      const p=store.prog[taskKey(ci,ti)];
+      const b=el('button','tk'+(cur&&cur.ci===ci&&cur.ti===ti?' act':''));
+      b.innerHTML=`<span class="ck">${p?'✅':'○'}</span><span>${t.title}</span><span class="st">${p?'⭐'.repeat(p.stars):''}</span>`;
+      b.onclick=()=>{side.classList.remove('open');startTask(ci,ti)};
+      d.appendChild(b);
+    });
+    side.appendChild(d);
+  });
+  const r=el('button','','Zacznij od nowa (skasuj postępy)');r.id='reset';
+  r.onclick=()=>{if(confirm('Na pewno skasować wszystkie gwiazdki i postępy?')){store.prog={};save();buildSide();updateStars();intro()}};
+  side.appendChild(r);
+  updateStars();
+}
+const updateStars=()=>{$('#stars').textContent='⭐ '+totalStars()+' / '+(CH.reduce((a,c)=>a+c.tasks.length,0)*3)};
+$('#menu').onclick=()=>side.classList.toggle('open');
+
+/* --- nawigacja --- */
+function nextUndone(from){
+  const list=[];CH.forEach((c,ci)=>c.tasks.forEach((_,ti)=>list.push([ci,ti])));
+  const start=from?list.findIndex(x=>x[0]===from[0]&&x[1]===from[1])+1:0;
+  for(let k=0;k<list.length;k++){const x=list[(start+k)%list.length];if(!store.prog[taskKey(x[0],x[1])])return x}
+  return null;
+}
+function startTask(ci,ti){
+  const task=CH[ci].tasks[ti];
+  cur={ci,ti,task,i:0,pts:0,max:0,weak:0,S:{}};
+  chat.innerHTML='';setDock();buildSide();
+  say(`<h3>${CH[ci].icon} ${task.title}</h3><span class="pg">Rozdział ${ci+1}: ${CH[ci].title} (${CH[ci].pages})</span>`,'head');
+  next();
+}
+function next(){
+  if(!cur)return;
+  const s=cur.task.steps[cur.i++];
+  if(!s)return finish();
+  STEP[s.t](s);
+}
+const contBtn=(label='Dalej ▶')=>setDock(btn(label,'primary',()=>{setDock();next()}));
+
+/* --- punktacja i zakończenie pytania --- */
+function finishQ(s,st,ok,note,reveal){
+  const c=cur;
+  if(!s.free){c.max++;c.pts+=ok?((st.tries||st.hinted)?0.5:1):0;if(!ok)c.weak++}
+  setDock();
+  if(ok){say(`<b>${pick(PRAISE)}</b> ${note||''}`,'good');if(s.ok)say(s.ok)}
+  else say(reveal,'info');
+  if(s.ok||!ok)contBtn();else setTimeout(()=>{if(cur===c)next()},650);
+}
+function wrongMsg(s,st,extra){
+  st.hinted=true;
+  say('Hmm, jeszcze nie to. 🤔 '+(extra||'')+(s.hint?`<br><span class="tip">💡 ${s.hint}</span>`:'')+'<br>Spróbuj jeszcze raz!','warn');
+}
+const hintBtn=(s,st)=>btn('💡 Podpowiedź','ghost',()=>{st.hinted=true;say(`<span class="tip">💡 ${s.hint||'Rozbij zadanie na mniejsze kroki i policz po kawałku.'}</span>`,'warn')});
+const answerText=(s,A)=>fmt(A)+(s.unit?' '+s.unit:'');
+
+/* --- kroki --- */
+const STEP={};
+STEP.say=s=>{say(s.h);if(s.widget)return;setDock(btn(s.btn||'Dalej ▶','primary',()=>{setDock();next()}))};
+
+STEP.num=s=>{
+  say(s.q);
+  const st={tries:0,hinted:false};
+  const inp=el('input','inp');inp.type='text';inp.inputMode='decimal';inp.placeholder='Wpisz odpowiedź…';inp.autocomplete='off';inp.setAttribute('aria-label','Twoja odpowiedź');
+  const go=()=>{
+    const v=parse(inp.value);
+    if(isNaN(v)){flash(inp);return}
+    const A=typeof s.a==='function'?s.a(cur.S):s.a;
+    let good=false,note='',msg='';
+    if(s.check){
+      const r=s.check(v,cur.S);
+      if(r&&r.retry){say(r.retry,'warn');flash(inp);return}
+      if(r===true){good=true;note=s.okAny||''}else if(typeof r==='string')msg=r;
+    }else{
+      good=close(v,A);
+      if(!good&&s.accept)for(const c of s.accept)if(close(v,c.a)){good=true;note=c.note||''}
+      if(!good&&s.alts)for(const c of s.alts)if(close(v,c.a))msg=c.msg;
+    }
+    me(fmt(v)+(s.unit?' '+s.unit:''));
+    if(good)return finishQ(s,st,true,note);
+    st.tries++;
+    if(st.tries<2){wrongMsg(s,st,msg);setDock(row());return}
+    const sol=s.sol?`<br>${s.sol}`:'';
+    finishQ(s,st,false,'',A==null?`Spokojnie, nic się nie stało! ${s.sol||''}`:`Spokojnie, nic się nie stało – błędy uczą! 💙<br>Poprawny wynik: <b>${answerText(s,A)}</b>.${sol}<br>Zobacz jeszcze raz, jak to wychodzi, i jedziemy dalej.`);
+  };
+  const row=()=>{
+    inp.value='';
+    const w=el('div','grid');
+    w.append(inp);if(s.unit)w.append(el('span','',s.unit));
+    w.append(btn('Sprawdź ✓','primary',go),hintBtn(s,st),btn('Nie wiem 🤷','ghost',()=>{me('Nie wiem');st.tries=2;const A=typeof s.a==='function'?s.a(cur.S):s.a;finishQ(s,st,false,'',`Nic nie szkodzi! Pokażę Ci, jak to zrobić. 💙<br>${A==null?'':`Poprawny wynik: <b>${answerText(s,A)}</b>.<br>`}${s.sol||s.hint||''}`)}));
+    return w;
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')go()};
+  setDock(row());
+};
+
+STEP.multi=s=>{
+  say(s.q);
+  const st={tries:0,hinted:false};
+  const grid=el('div','grid');
+  const ins=s.fields.map(f=>{
+    const w=el('label','fld');w.innerHTML=`<span>${f.l}</span>`;
+    const i=el('input');i.type='text';i.inputMode='decimal';i.autocomplete='off';
+    w.appendChild(i);if(f.u)w.appendChild(el('em','',f.u));grid.appendChild(w);return i;
+  });
+  const go=()=>{
+    const vals=ins.map(i=>parse(i.value));
+    const empty=vals.findIndex(v=>isNaN(v));
+    if(empty>=0){flash(ins[empty]);ins[empty].focus();return}
+    me(s.fields.map((f,k)=>`${f.l}: <b>${fmt(vals[k])}</b>`).join('<br>'));
+    const oks=vals.map((v,k)=>close(v,s.fields[k].a));
+    ins.forEach((i,k)=>{i.classList.toggle('good',oks[k]);i.classList.toggle('bad',!oks[k])});
+    if(oks.every(Boolean))return finishQ(s,st,true);
+    st.tries++;
+    if(st.tries<2){wrongMsg(s,st,'Czerwone pola są do poprawki, zielone są dobre.');ins.find((_,k)=>!oks[k]).focus();return}
+    finishQ(s,st,false,'',`Nic nie szkodzi! 💙 Poprawne odpowiedzi:<br>${s.fields.map(f=>`${f.l}: <b>${fmt(f.a)}</b>${f.u?' '+f.u:''}`).join('<br>')}${s.sol?'<br>'+s.sol:''}`);
+  };
+  ins.forEach((i,k)=>{i.onkeydown=e=>{if(e.key==='Enter'){if(k<ins.length-1)ins[k+1].focus();else go()}}});
+  setDock(grid,btn('Sprawdź ✓','primary',go),hintBtn(s,st));
+  ins[0].focus();
+};
+
+STEP.choice=s=>{
+  say(s.q);
+  const st={tries:0,hinted:false};
+  const multi=Array.isArray(s.a),A=multi?s.a:[s.a];
+  const order=s.fixed?s.opts.map((_,i)=>i):shuffle(s.opts.map((_,i)=>i));
+  const box=el('div','opts');const sel=new Set();const bt={};
+  const submit=S=>{
+    const ok=S.size===A.length&&A.every(i=>S.has(i));
+    me([...S].map(i=>s.opts[i]).join('<br>'));
+    if(ok){order.forEach(i=>{bt[i].disabled=true;if(A.includes(i))bt[i].classList.add('good')});return finishQ(s,st,true)}
+    st.tries++;
+    if(st.tries<2){
+      wrongMsg(s,st,multi?'Któraś z zaznaczonych odpowiedzi jest zła albo brakuje którejś dobrej.':'');
+      if(multi){sel.clear();order.forEach(i=>bt[i].classList.remove('sel'))}
+      else S.forEach(i=>{bt[i].classList.add('bad');bt[i].disabled=true});
+      return;
+    }
+    order.forEach(i=>{bt[i].disabled=true;if(A.includes(i))bt[i].classList.add('good')});
+    finishQ(s,st,false,'',`Nic nie szkodzi! 💙 Poprawna odpowiedź:<br><b>${A.map(i=>s.opts[i]).join('<br>')}</b>${s.hint?'<br>'+s.hint:''}`);
+  };
+  order.forEach(i=>{
+    const b=el('button','opt',s.opts[i]);b.type='button';bt[i]=b;
+    b.onclick=()=>{if(multi){sel.has(i)?sel.delete(i):sel.add(i);b.classList.toggle('sel')}else submit(new Set([i]))};
+    box.appendChild(b);
+  });
+  const bar=[];
+  if(multi){bar.push(el('div','','Zaznacz <b>wszystkie</b> poprawne odpowiedzi, potem kliknij „Sprawdź”.'));bar.push(btn('Sprawdź ✓','primary',()=>{if(!sel.size){flash(box);return}submit(new Set(sel))}))}
+  bar.push(hintBtn(s,st));
+  setDock(box,...bar);
+};
+
+STEP.text=s=>{
+  say(s.q);
+  const st={tries:0,hinted:false};
+  const inp=el('input','inp');inp.type='text';inp.placeholder='Wpisz odpowiedź…';inp.autocomplete='off';inp.autocapitalize='none';
+  const go=()=>{
+    const v=inp.value.trim();if(!v){flash(inp);return}
+    me(v);
+    if(s.acc.some(a=>norm(a)===norm(v)))return finishQ(s,st,true);
+    st.tries++;
+    if(st.tries<2){wrongMsg(s,st);inp.value='';inp.focus();return}
+    finishQ(s,st,false,'',`Nic nie szkodzi! 💙 ${s.sol||'Poprawna odpowiedź: <b>'+s.acc[0]+'</b>'}`);
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')go()};
+  setDock(inp,btn('Sprawdź ✓','primary',go),hintBtn(s,st));
+};
+
+STEP.note=s=>{
+  say(s.q);
+  setDock(btn('Zrobione ✅','primary',()=>{me('Zrobione ✅');say(pick(['Super, tak trzymaj! 👏','Świetna robota! 🌟','Brawo za wytrwałość! 💪']));setDock();setTimeout(next,500)}),
+    s.hint?btn('🆘 Potrzebuję podpowiedzi','ghost',()=>say(`<span class="tip">💡 ${s.hint}</span>`,'warn')):null);
+};
+
+STEP.gate=s=>{
+  const msg=cur.weak?`Było kilka błędów, więc radzę <b>jeszcze trochę poćwiczyć</b> – powtórzenie to najlepszy sposób! 💪`:`Idzie Ci świetnie! Zostało jeszcze <b>${s.skip}</b> przykładów do ćwiczeń. Chcesz je zrobić?`;
+  say(msg+(cur.weak?`<br>Zostało ${s.skip} przykładów.`:''));
+  setDock(btn('Jeszcze trochę! 💪','primary',()=>{setDock();next()}),btn('Wystarczy, idziemy dalej ▶','ghost',()=>{cur.i+=s.skip;setDock();next()}));
+};
+
+STEP.widget=s=>{if(s.name==='comma')widgetComma();setDock(btn('Dalej ▶','primary',()=>{setDock();next()}))};
+function widgetComma(){
+  const w=el('div','widget');
+  w.innerHTML=`<div><b>🔧 Maszyna do przesuwania przecinka</b></div>
+   <div class="wrow">Liczba: <input value="6,2" inputmode="decimal" aria-label="liczba"></div>
+   <div class="wrow" id="ops"></div>
+   <div class="wres" id="res">6,2</div>`;
+  const inp=$('input',w),ops=$('#ops',w),res=$('#res',w);
+  const ex=[['· 10',1],['· 100',2],['· 1000',3],[': 10',-1],[': 100',-2],[': 1000',-3]];
+  ex.forEach(([t,k])=>{
+    const b=btn(t,'',()=>{
+      const v=inp.value.replace(',','.').trim();
+      if(!/^\d+(\.\d+)?$/.test(v)){res.innerHTML='Wpisz liczbę, np. 6,2';return}
+      const r=shiftComma(v,k);
+      res.innerHTML=`${v.replace('.',',')} ${t} = <b>${r}</b><small>przecinek skacze o ${Math.abs(k)} ${Math.abs(k)===1?'miejsce':'miejsca'} w ${k>0?'PRAWO ➡️':'LEWO ⬅️'}</small>`;
+    });
+    ops.appendChild(b);
+  });
+  const m=el('div','msg');m.innerHTML='<div class="av"></div>';m.appendChild(w);chat.appendChild(m);scrollDown();
+}
+
+/* --- koniec zadania --- */
+function finish(){
+  const c=cur;
+  const ratio=c.max?c.pts/c.max:1;
+  const stars=ratio>=.85?3:ratio>=.6?2:1;
+  const key=taskKey(c.ci,c.ti),prev=store.prog[key];
+  if(!prev||stars>=prev.stars)store.prog[key]={stars,pct:Math.round(ratio*100)};
+  save();buildSide();
+  const msg=stars===3?'Rewelacja! Opanowane na medal. 🏅':stars===2?'Dobrze Ci poszło! Jeszcze trochę ćwiczeń i będzie perfekcyjnie. 💪':'Dobra robota, że doszło się do końca! To zadanie warto <b>powtórzyć</b> – za drugim razem pójdzie lepiej. 🌱';
+  say(`<div class="big">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div><b>Koniec zadania: ${c.task.title}</b><br>${c.max?`Wynik: <b>${Math.round(ratio*100)}%</b>. `:''}${msg}`,'good');
+  const n=nextUndone([c.ci,c.ti]);
+  const bs=[];
+  if(n)bs.push(btn('Następne zadanie ▶','primary',()=>startTask(n[0],n[1])));
+  else say('🎉 <b>Przeszedł/przeszłaś całą książkę!</b> Naprawdę. Jestem dumna jak sowa! Możesz wracać do dowolnego zadania z listy i próbować zdobyć komplet gwiazdek.');
+  if(stars<3)bs.push(btn('Powtórz to zadanie 🔁',n?'':'primary',()=>startTask(c.ci,c.ti)));
+  bs.push(btn('Lista zadań ☰','ghost',()=>side.classList.add('open')));
+  setDock(...bs);
+}
+
+/* --- powitanie --- */
+function intro(){
+  cur=null;chat.innerHTML='';buildSide();
+  if(!store.name){
+    say(`Cześć! 👋 Jestem <b>Sowa Liczba</b> 🦉 i będę Twoim korepetytorem z matematyki.<br>Razem przejdziemy <b>wszystkie zadania</b> z Twojej książki – krok po kroku.<br><br>Jak masz na imię?`);
+    const inp=el('input','inp');inp.placeholder='Twoje imię…';inp.autocomplete='off';
+    const go=()=>{const v=inp.value.trim();if(!v){flash(inp);return}store.name=v.slice(0,30);save();me(store.name);welcome()};
+    inp.onkeydown=e=>{if(e.key==='Enter')go()};
+    setDock(inp,btn('Zaczynamy! ▶','primary',go));
+  }else welcome(true);
+}
+function welcome(back){
+  const n=nextUndone(null);
+  const done=Object.keys(store.prog).length;
+  if(!back){
+    say(`Miło Cię poznać, <b>{name}</b>! 😊 Oto jak to działa:
+     <div class="ex">1️⃣ Tłumaczę nowe rzeczy krótko i na przykładach.<br>2️⃣ Potem <b>Ty liczysz</b> – wpisujesz odpowiedzi (przecinek lub kropka, jak wolisz).<br>3️⃣ Jeśli się pomylisz – dostaniesz podpowiedź i drugą szansę. 💡<br>4️⃣ Na koniec sprawdzam, czy <b>rozumiesz</b> – nie tylko czy wynik się zgadza.<br>5️⃣ Za każde zadanie dostajesz do 3 gwiazdek ⭐</div>
+     Przygotuj <b>zeszyt i długopis</b>. Błędy to nie wstyd – to najlepszy sposób nauki. Gotowy/gotowa?`);
+  }else{
+    say(`Cześć z powrotem, <b>{name}</b>! 🦉 Masz już ${done} ukończonych zadań i ${totalStars()} ⭐. ${n?'Chcesz kontynuować?':'Ukończyłeś/ukończyłaś wszystko! 🎉'}`);
+  }
+  const bs=[];
+  if(n)bs.push(btn(done?`Kontynuuj: ${CH[n[0]].tasks[n[1]].title}`:'Zaczynamy od początku ▶','primary',()=>startTask(n[0],n[1])));
+  bs.push(btn('Wybiorę zadanie z listy ☰','ghost',()=>side.classList.add('open')));
+  setDock(...bs);
+}
+window.__tutor={CH,startTask,STEP,get cur(){return cur},store};
+intro();
+</script>
+</body>
+</html>
